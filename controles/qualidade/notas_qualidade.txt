@@ -1,0 +1,13 @@
+Tradicional: 4,5 > nota <= 5,9
+Superior: 6 >= nota < 7
+Gourmet: 7 > nota
+
+Extra-forte = tradicional
+Premium = superior
+Especial = superior
+
+Gourmet + Organico = Gourmet
+
+Variáveis criadas:
+qualidade: NA como TRADICIONAL
+qualidade2: NA como NAO INFORMADA
