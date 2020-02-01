@@ -1,6 +1,5 @@
 library(stargazer)
 library(tidyverse)
-library(PregoesBR)
 library(lfe)
 
 # Abrindo bases ---------------------------------------------------------------
@@ -11,21 +10,21 @@ cnet_cafe_sp <- readRDS('data/cnet_cafe_sp_dd.rds')
 
 # Importando DFs com UASGs selecionadas
 selected_uasgs_list <- list(
-  readRDS('selecionando_uasgs/bec_selected_uasgs_2015.rds'),
-  readRDS('selecionando_uasgs/cnet_selected_uasgs_2015.rds'),
-  readRDS('selecionando_uasgs/cnet_sp_selected_uasgs_2015.rds')
+  readRDS('data/bec_selected_uasgs_soft_trim.rds'),
+  readRDS('data/cnet_selected_uasgs_soft_trim.rds'),
+  readRDS('data/cnet_sp_selected_uasgs_soft_trim.rds')
   ) %>%
   # Selecionando apenas colunas desejadas
-  map(.f = ~ .x %>%
-        select(id_item,unidade_compradora_lasso = lasso) %>%
-        mutate(unidade_compradora_lasso = as.character(unidade_compradora_lasso))
-      ) %>% set_names('bec_selected_uasgs', 'cnet_selected_uasgs', 'cnet_sp_selected_uasgs')
+  map(.f = ~ select(.x, id_item,unidade_compradora_lasso = lasso) %>%
+        mutate(unidade_compradora_lasso = 
+                 as.character(unidade_compradora_lasso))) %>% 
+  set_names('bec_selected_uasgs', 'cnet_selected_uasgs', 'cnet_sp_selected_uasgs')
 
-# PREPARANDO BASES ------------------------------------------------------------
+# Data wrangling --------------------------------------------------------------
 data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
   map(.f = ~ .x %>%
-        # TRIMMING: 2.5% de cada lado # <<<<
-        trim_df('win_bid_kg', perc = 5) %>%
+        # Removendo outliers: 2.5% de cada lado # <<<<
+        PregoesBR::trim_df('win_bid_kg', perc = 2.5) %>%
         # Selecionando apenas variaveis relevantes
         select(id_item, abertura_lances,
                inicio_ano, inicio_trimestre, inicio_bimestre, inicio_mes,
@@ -36,46 +35,33 @@ data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
                futuro_fitted, arab_rob_fitted, arab_fitted, rob_fitted,
                qualidade, qualidade2
                ) %>%
-        # Transformando todos os factors em caracteres para evitar warnings ao juntar bases
+        # Coercing to factor to avoid warnings when joining dataframes
         mutate_if(is.factor, as.character) %>%
         filter(kg_por_unid != 0.25)
       ) %>%
   # Incluindo coluna com uasgs selecionadas
-  # map2(
-  #   .y = selected_uasgs_list,
-  #   .f = ~ left_join(.x, .y, by = 'id_item')
-  #   ) %>%
+  map2(
+    .y = selected_uasgs_list,
+    .f = ~ left_join(.x, .y, by = 'id_item')
+    ) %>%
   # Dando nomes aos DFs
   set_names(c('bec_cafe', 'cnet_cafe', 'cnet_cafe_sp'))
 
-
 # Montando bases DD -----------------------------------------------------------
 dd_data_list <- list(data_list$cnet_cafe, data_list$cnet_cafe_sp) %>%
-  map(.f = ~ bind_rows(.x, data_list$beccafe) %>%
-        build_dd_df()
+  map(.f = ~ bind_rows(.x, data_list$bec_cafe) %>%
+        PregoesBR::build_dd_df()
       ) %>% set_names(c('full_cafe_dd', 'sp_cafe_dd'))
 
 # Salvando como .dta para checar no Stata -------------------------------------
 # dd_data_list$sp_cafe_dd %>%
 #   mutate(id_item = factor(id_item)) %>%
 #   select(-inicio_ano, -inicio_bimestre, -inicio_mes, -inicio_semana) %>%
-#   haven::write_dta('C:/Users/Dell/Desktop/sp_cafe_dd.dta')
+#   haven::write_dta('sp_cafe_dd.dta')
 
 # DD --------------------------------------------------------------------------
 attach(dd_data_list$sp_cafe_dd)
 detach(dd_data_list$sp_cafe_dd)
-
-# Nivel
-felm1 <- felm(win_bid ~ comprasnet + treat1 + treat2 | bimestre)
-felm2 <- felm(win_bid ~ comprasnet + treat1 + treat2 | bimestre + unidade_compradora_lasso)
-felm3 <- felm(win_bid ~ comprasnet + treat1 + treat2 | bimestre + unidade_compradora_lasso + municipio)
-felm4 <- felm(win_bid ~ comprasnet + treat1 + treat2 | bimestre + unidade_compradora_lasso + municipio + marca_vencedor_principais)
-felm5 <- felm(win_bid ~ comprasnet + treat1 + treat2 + qualidade | bimestre + unidade_compradora_lasso + municipio + marca_vencedor_principais)
-felm6 <- felm(win_bid ~ comprasnet + treat1 + treat2 + qualidade + kg_por_unid | bimestre + unidade_compradora_lasso + municipio + marca_vencedor_principais)
-felm7 <- felm(win_bid ~ comprasnet + treat1 + treat2 + qualidade + kg_por_unid + arab_defl | bimestre + unidade_compradora_lasso + municipio + marca_vencedor_principais)
-felm8 <- felm(win_bid ~ comprasnet + treat1 + treat2 + qualidade + kg_por_unid + futuro_defl | bimestre + unidade_compradora_lasso + municipio + marca_vencedor_principais)
-felm9 <- felm(win_bid ~ comprasnet + treat1 + treat2 + qualidade + kg_por_unid + futuro_defl + arab_defl | bimestre + unidade_compradora_lasso + municipio + marca_vencedor_principais)
-
 
 # Log
 felm1_log <- felm(log_win_bid ~ comprasnet + treat1 + treat2 | bimestre)
