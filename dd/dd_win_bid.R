@@ -8,18 +8,6 @@ bec_cafe <- readRDS('data/bec_cafe_dd.rds')
 cnet_cafe <- readRDS('data/cnet_cafe_dd.rds')
 cnet_cafe_sp <- readRDS('data/cnet_sp_cafe_dd.rds')
 
-# Importando DFs com UASGs selecionadas em uma lista
-selected_uasgs_names <- str_c(c('bec', 'cnet', 'cnet_sp'), '_selected_uasgs')
-
-selected_uasgs_list <- 
-  map(.x = str_c('data/', selected_uasgs_names, '_soft_trim.rds'),
-      .f = readRDS) %>%
-  # Selecionando apenas colunas desejadas
-  map(.f = ~ select(.x, id_item,unidade_compradora_lasso = lasso) %>%
-        mutate(unidade_compradora_lasso = 
-                 as.character(unidade_compradora_lasso))) %>% 
-  set_names(selected_uasgs_names)
-
 # Data wrangling --------------------------------------------------------------
 data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
   map(.f = ~ .x %>%
@@ -30,31 +18,25 @@ data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
                inicio_ano, inicio_trimestre, inicio_bimestre, inicio_mes,
                win_bid_kg, quantidade, kg_por_unid, num_forn_lances,
                comprasnet, sigla_uf, municipio, unidade_compradora,
-               marca_vencedor_principais,
+               unidade_compradora_lasso, marca_vencedor_principais,
                futuro_defl, arab_rob_defl, arab_defl, rob_defl,
                futuro_fitted, arab_rob_fitted, arab_fitted, rob_fitted,
                qualidade, qualidade2
                ) %>%
         # Coercing to factor to avoid warnings when joining dataframes
-        mutate_if(is.factor, as.character) %>%
-        filter(kg_por_unid != 0.25) # <<<<
-      ) %>%
-  # Incluindo coluna com unidades compradoras selecionadas
-  map2(
-    .y = selected_uasgs_list,
-    .f = ~ left_join(.x, .y, by = 'id_item')
-    ) %>%
+        mutate_if(is.factor, as.character)
+      ) %>% 
   # Dando nomes aos DFs
-  set_names(c('bec_cafe', 'cnet_cafe', 'cnet_cafe_sp'))
+  set_names(c('bec', 'cnet', 'cnet_sp'))
 
 # Montando bases DD em uma lista ----------------------------------------------
-dd_data_list <- list(data_list$cnet_cafe, data_list$cnet_cafe_sp) %>%
-  map(.f = ~ bind_rows(.x, data_list$bec_cafe) %>%
+dd_data_list <- list(data_list$cnet, data_list$cnet_sp) %>%
+  map(.f = ~ bind_rows(.x, data_list$bec) %>%
         PregoesBR::build_dd_df()
-      ) %>% set_names(c('full_cafe_dd', 'sp_cafe_dd'))
+      ) %>% set_names(c('dd_brasil', 'dd_sp'))
 
 # Salvando como .dta para checar no Stata -------------------------------------
-# dd_data_list$sp_cafe_dd %>%
+# dd_data_list$dd_sp %>%
 #   mutate(id_item = factor(id_item)) %>%
 #   select(-inicio_ano, -inicio_bimestre, -inicio_mes, -inicio_semana) %>%
 #   haven::write_dta('sp_cafe_dd.dta')
@@ -75,7 +57,7 @@ df_models_sp <- tibble(
       str_c(form, ' + qualidade + kg_por_unid + arab_defl + comprasnet:trend_bimestre | bimestre + unidade_compradora + municipio + marca_vencedor_principais')),
   models = map(.x = formula,
                .f = ~ felm(as.formula(.x),
-                           data = dd_data_list$sp_cafe_dd))) # <<<<
+                           data = dd_data_list$dd_sp))) # <<<<
 
 stargazer(df_models_sp$models, type = 'text')
 
@@ -93,7 +75,7 @@ df_models_brasil <- tibble(
       str_c(form, ' + qualidade + kg_por_unid + arab_defl + comprasnet:trend_bimestre | bimestre + sigla_uf:bimestre + municipio + unidade_compradora')),
   models = map(.x = formula,
                .f = ~ felm(as.formula(.x),
-                           data = dd_data_list$full_cafe_dd))) # <<<<
+                           data = dd_data_list$dd_brasil))) # <<<<
 
 stargazer(df_models_brasil$models, type = 'text')
 
@@ -101,12 +83,12 @@ stargazer(df_models_brasil$models, type = 'text')
 lm_sp <- lm(log_win_bid ~ comprasnet + treat1 + treat2 + arab_defl + 
               kg_por_unid + qualidade + bimestre + municipio + 
               unidade_compradora + marca_vencedor_principais,
-            data = dd_data_list$sp_cafe_dd)
+            data = dd_data_list$dd_sp)
 
 lm_brasil <- lm(log_win_bid ~ comprasnet + treat1 + treat2 + qualidade 
                 + kg_por_unid + arab_defl + bimestre + sigla_uf:bimestre
                 + municipio + unidade_compradora,
-                data = dd_data_list$full_cafe_dd)
+                data = dd_data_list$dd_brasil)
 
 df_std_sp <- PregoesBR::get_robust_std_errors(lm_sp, HC = 'HC1')
 df_std <- PregoesBR::get_robust_std_errors(lm_brasil, HC = 'HC1')
@@ -116,13 +98,13 @@ dd_treat_trends_sp <-
   felm(log_win_bid ~ comprasnet + treat1 + treat2 + arab_defl + qualidade + 
          treat1_trend_bimestre + treat2_trend_bimestre | 
        bimestre + unidade_compradora + municipio + marca_vencedor_principais,
-     data = dd_data_list$sp_cafe_dd) # <<<<
+     data = dd_data_list$dd_sp) # <<<<
 
 dd_treat_trends_brasil <- 
   felm(log_win_bid ~ comprasnet + treat1 + treat2 + arab_defl + qualidade + 
          kg_por_unid + treat1_trend_bimestre + treat2_trend_bimestre | 
          bimestre + sigla_uf:bimestre + unidade_compradora + municipio,
-       data = dd_data_list$full_cafe_dd) # <<<<
+       data = dd_data_list$dd_brasil) # <<<<
 
 stargazer(dd_treat_trends_sp,
           dd_treat_trends_brasil,
