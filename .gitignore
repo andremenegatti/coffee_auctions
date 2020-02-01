@@ -1,4 +1,7 @@
 data/*
+*/old/
+old/*
+*/placebo/
 
 # History files
 .Rhistory
