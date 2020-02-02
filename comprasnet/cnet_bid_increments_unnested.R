@@ -1,12 +1,12 @@
 library(tidyverse)
 
-df_bid_inc <- readRDS('Comprasnet/cnet_df_bid_inc.rds')
+df_bid_inc <- readRDS('Comprasnet/cnet_bid_increments.rds')
 
 # Nos casos em que ha apenas um lance (apos o filtro increment < 0),
 # tem-se NA no incremento por causa do lag; Filtro para ficar apenas
 # com casos em que ha no min. 2 lances em 'bid_increments_negative'.
 # ATENCAO! Esse passo pode nao ser interessante a depender do objetivo.
-df_bid_inc_clean <- df_bid_inc_clean %>%
+df_bid_inc_clean <- df_bid_inc %>%
   filter(map_lgl(.x = bid_increments_negative, .f = ~ nrow(.x) >= 1))
 
 # Selecionando apenas incrementos negativos e unnesting
@@ -18,4 +18,4 @@ df_bid_inc_unnested <- df_bid_inc_clean %>%
          bid_increments_negative) %>%
   unnest(cols = bid_increments_negative)
 
-# saveRDS(df_bid_inc_unnested, 'Comprasnet/cnet_df_bid_inc_unnested.rds')
+saveRDS(df_bid_inc_unnested, 'data/cnet_bid_increments_unnested.rds')

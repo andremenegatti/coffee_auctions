@@ -1,6 +1,6 @@
 library(PregoesBR)
 
-df_atas <- readRDS("Comprasnet/cnet_cafe.rds") %>%
+df_atas <- readRDS("data/cnet_cafe.rds") %>%
   filter(abertura_lances >= '2011-03-01') # <<<<<<
 
 # Selecionando variaveis e excluindo leiloes em que houve menos de 2 lances
@@ -118,4 +118,4 @@ df_bid_inc <- df_bid_inc %>%
                                     .f = ~ median_narm(.x$norm_inc_first))
     )
 
-# saveRDS(df_bid_inc, 'Comprasnet/cnet_df_bid_inc.rds')
+saveRDS(df_bid_inc, 'data/cnet_bid_increments.rds')

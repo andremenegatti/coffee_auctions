@@ -1,6 +1,6 @@
 library(PregoesBR)
 
-df_atas <- readRDS("comprasnet/cnet_cafe.rds")
+df_atas <- readRDS("data/cnet_cafe.rds")
 
 # Filtrando e selecionando
 df_intervalo <- df_atas %>%
@@ -42,11 +42,11 @@ df_intervalo4 <- df_intervalo3 %>%
                              intervalo_lance_proprio =
                                calcular_intervalo_lances(data_hora),
 
-                             desconto_lance_proprio_bruto =
+                             incremento_lance_proprio_bruto =
                                valor_lance - lag(valor_lance),
 
-                             incremento_lance_proprio_bruto =
-                               desconto_lance_proprio_bruto/first(valor_lance)
+                             incremento_lance_proprio =
+                               incremento_lance_proprio_bruto/first(valor_lance)
 
                              ) %>%
                            # Excluindo NA do primeiro lance de cada fornecedor
@@ -68,4 +68,4 @@ df_intervalo6 <- df_intervalo5 %>%
          intervalo_mesmo_fornecedor_clean) %>%
   unnest(cols = intervalo_mesmo_fornecedor_clean)
 
-# saveRDS(df_intervalo6, 'Comprasnet/cnet_df_intervalo_mesmo_fornecedor.rds')
+saveRDS(df_intervalo6, 'data/cnet_intervalo_mesmo_fornecedor.rds')

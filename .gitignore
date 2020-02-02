@@ -2,6 +2,7 @@ data/*
 */old/
 old/*
 */placebo/
+plots/trelliscope/*
 
 # History files
 .Rhistory
