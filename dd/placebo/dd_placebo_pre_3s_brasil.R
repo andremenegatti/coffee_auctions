@@ -31,8 +31,8 @@ df_placebo <-
     model_summary = pmap(
       .l = list(treat1, treat2, treat_placebo),
       .f = ~ lm(log_win_bid ~ ..1 + ..2 + ..3 + qualidade + kg_por_unid + 
-                  arab_defl + bimestre + unidade_compradora + 
-                  municipio + marca_vencedor_principais)
+                  arab_defl + bimestre + sigla_uf:bimestre + 
+                  municipio + unidade_compradora)
     )
   )
 
@@ -83,7 +83,7 @@ ggplot(df_placebo, aes(x = data_placebo, group = 1)) +
     x = 'Data do Tratamento Placebo',
     y = 'Coeficiente estimado para o tratamento placebo',
     title = 'Efeito de Tratamento Placebo Anterior à Regra dos 3s',
-    subtitle = 'Apenas São Paulo',
+    subtitle = 'Amostra completa',
     caption = 'Notas:
     1) Resultados de modelos considerando datas alternativas para o tratamento placebo;
     2) Total de 60 placebos, de 22/04/2012 a 03/12/2013, intervalados em 10 dias;
@@ -130,7 +130,7 @@ ggplot(mapping = aes(x = data_placebo, group = grupo)) +
   labs(
     x = 'Data do Tratamento Placebo',
     y = 'Coeficiente estimado',
-    title = 'Teste Placebo - Efeito da Regra dos 3s - Apenas SP',
+    title = 'Teste Placebo - Efeito da Regra dos 3s - Amostra completa',
     subtitle = 'Introdução de um tratamento placebo anterior à regra dos 3s',
     caption = 'Notas:
     1) Resultados de modelos considerando datas alternativas para o tratamento placebo;

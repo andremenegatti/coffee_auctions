@@ -90,7 +90,7 @@ ggplot(df_placebo, aes(x = data_placebo, group = 1)) +
     3) As áreas sombreadas representam intervalos de confiança de 95% (erros padrão HC1)'
   )
 
-ggsave('plots/placebo/placebo_3s_pre.png', width = 6, height = 5)
+ggsave('plots/placebo/placebo_3s_pre_sp.png', width = 6, height = 5)
 
 # Plotting: dois painéis: Placebo + 3s ----------------------------------------
 # Finalizando organização do dataframe para construir o gráfico
@@ -138,4 +138,4 @@ ggplot(mapping = aes(x = data_placebo, group = grupo)) +
     3) As áreas sombreadas representam intervalos de confiança de 95% (erros padrão HC1)'
   )
 
-ggsave('plots/placebo/placebo_3s_pre_2paineis.png', width = 9, height = 6)
+ggsave('plots/placebo/placebo_3s_pre_sp_2paineis.png', width = 9, height = 6)
