@@ -1,7 +1,9 @@
 data/*
+dd/placebo/data/
+dd/placebo/old/*
+dd/placebo/old
 */old/
 old/*
-*/placebo/
 plots/trelliscope/*
 
 # History files
