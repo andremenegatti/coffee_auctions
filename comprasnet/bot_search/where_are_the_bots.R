@@ -1,19 +1,22 @@
-library(PregoesBR)
+library(tidyverse)
 
-df_intervalo_mesmo_fornecedor <- readRDS("Comprasnet/cnet_df_intervalo_mesmo_fornecedor.rds") %>%
-  filter(abertura_lances > '2011-03-01')
+# Importando dados ------------------------------------------------------------
+df_intervalo_mesmo_fornecedor <- 
+  readRDS("data/cnet_intervalo_mesmo_fornecedor.rds")
 
-df_bid_inc_unnested <- readRDS("Comprasnet/cnet_df_bid_inc_unnested.rds")
+df_bid_inc <- readRDS('data/cnet_bid_increments.rds')
 
-df_bid_inc <- readRDS('Comprasnet/cnet_df_bid_inc.rds')
+df_bid_inc_unnested <- readRDS("data/cnet_bid_increments_unnested.rds")
 
-df_forn_total_lances_e_pregoes <- readRDS('Comprasnet/df_forn_total_lances_e_pregoes.rds')
+df_lances <- readRDS('data/cnet_lances.rds')
 
-# glimpse(df_intervalo_mesmo_fornecedor)
-# glimpse(df_bid_inc_unnested)
-# glimpse(df_bid_inc)
+df_forn_total_lances_e_pregoes <- 
+  readRDS('comprasnet/bot_search/cnet_forn_total_lances_e_pregoes.rds')
 
-df_bots1 <- df_bid_inc_unnested %>%
+# Data exploration ------------------------------------------------------------
+# Estatisticas relativas a incrementos e intervalos de cada fornecedor
+# Apenas lances de cobertura <<<<
+df_stats_menor_lance <- df_bid_inc_unnested %>%
   group_by(CNPJ_CPF) %>%
   summarise(n_inc = n(),
             avg_inc_first = mean(norm_inc_first),
@@ -27,23 +30,27 @@ df_bots1 <- df_bid_inc_unnested %>%
             sd_intervalo_menor_lance = sd(intervalo_menor_lance)) %>%
   ungroup()
 
-
-df_bots2 <- df_intervalo_mesmo_fornecedor %>%
+# Estatisticas relativas a intervalos e incrementos entre lances próprios
+df_stats_lances_proprios <- df_intervalo_mesmo_fornecedor %>%
   group_by(CNPJ_CPF) %>%
   summarise(n_mesmo_fornecedor = n(),
-            avg_int_mesmo_forn = mean(intervalo_entre_lances),
-            median_int_mesmo_forn = median(intervalo_entre_lances),
-            sd_int_mesmo_forn = sd(intervalo_entre_lances)) %>%
+            avg_int_mesmo_forn = mean(intervalo_lance_proprio),
+            median_int_mesmo_forn = median(intervalo_lance_proprio),
+            sd_int_mesmo_forn = sd(intervalo_lance_proprio)) %>%
   ungroup()
 
-df_bots3 <- df_bots1 %>%
-  full_join(df_bots2, by = "CNPJ_CPF") %>%
-  arrange(desc(n_inc))
-
-df_bots4 <- df_bots3 %>%
-  left_join(df_forn_total_lances_e_pregoes, by = 'CNPJ_CPF')
-
-# saveRDS(df_bots4, 'Comprasnet/df_bots4.rds')
+# Juntando bases
+df_stats <- df_forn_total_lances_e_pregoes %>% 
+  mutate(regime_juridico = 
+           case_when(regime_juridico == 'Sem intervalo minimo' ~ 0,
+                     regime_juridico == 'Regra 20s' ~ 1,
+                     regime_juridico == 'Regra 20s + Regra 3s' ~ 2)) %>% 
+  pivot_wider(names_from = regime_juridico,
+              values_from = c(n_bids, n_auctions, bids_auction_ratio)) %>% 
+  left_join(df_stats_menor_lance, by = 'CNPJ_CPF') %>% 
+  left_join(df_stats_lances_proprios, by = 'CNPJ_CPF') %>% 
+  arrange(desc(n_inc)) %>% 
+  select(CNPJ_CPF, n_inc:sd_int_mesmo_forn, n_bids_2:bids_auction_ratio_2)
 
 # Relacao dos 10 fornecedores que mais registraram lances
 dez_mais_lances <- df_forn_total_lances_e_pregoes$CNPJ_CPF[1:10]
@@ -53,9 +60,9 @@ dez_mais_lances <- df_forn_total_lances_e_pregoes$CNPJ_CPF[1:10]
 sum(df_forn_total_lances_e_pregoes$n_bids[1:10])/sum(df_forn_total_lances_e_pregoes$n_bids)
 
 # DF com pregoes em que o fornecedor "11.282.541/0001-76" participou
-pregoes_possivel_robo <- filter(df_forn_lances_por_pregao, CNPJ_CPF == dez_mais_lances[1])
+pregoes_possivel_robo <- df_forn_lances_por_pregao %>% 
+  filter(CNPJ_CPF == dez_mais_lances[1])
 # saveRDS(pregoes_possivel_robo, 'pregoes_possivel_robo.rds')
-
 
 ## CHECAR ATIVIDADE DESSE FORNECEDOR APOS AS NOVAS REGRAS
 ## Talvez seja interessante restringir a lances de cobertura

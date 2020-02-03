@@ -191,6 +191,7 @@ df_plot$median_inc <-
                    'normalizado pelo primeiro lance'))
 
 # Compilando e salvando -------------------------------------------------------
-trelliscope(df_plot, name = 'Comprasnet', path = 'plots/', nrow = 1, ncol = 2,
+trelliscope(df_plot, nrow = 1, ncol = 2,
+            name = 'Comprasnet', path = 'plots/trelliscope',
             desc = str_c('Leiloes eletronicos de compra de cafe realizados no',
                          ' Comprasnet entre 01/03/2011 e 31/12/2017'))
