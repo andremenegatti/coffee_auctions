@@ -7,7 +7,7 @@ dd_brasil <- readRDS('data/dd_brasil.rds')
 attach(dd_brasil)
 
 # Rodando Modelos Placebo -----------------------------------------------------
-df_placebo_post <-
+df_placebo <-
   tibble(data_placebo = seq(30, 620, by = 10) + data_3s) %>%
   mutate(
     treat1 = map(
@@ -67,10 +67,10 @@ df_placebo <- df_placebo %>%
 df_placebo_results <- df_placebo %>% 
   select(-model, -standard_errors, -treat1, -treat2, -treat_placebo)
 
-saveRDS(df_placebo_results, 'dd/placebo/data/placebo_pre_3s_brasil_results.rds')
+saveRDS(df_placebo_results, 'dd/placebo/data/placebo_post_3s_brasil_results.rds')
 
 # Plotting: efeito do tratamento placebo --------------------------------------
-ggplot(df_placebo, aes(x = data_placebo, group = 1)) +
+ggplot(df_placebo_results, aes(x = data_placebo, group = 1)) +
   geom_line(aes(y = treat_placebo_est), color = 'black') +
   geom_ribbon(aes(ymin = treat_placebo_lower, ymax = treat_placebo_upper),
               fill = 'gray', alpha = 0.5) +
@@ -82,7 +82,7 @@ ggplot(df_placebo, aes(x = data_placebo, group = 1)) +
   labs(
     x = 'Data do Tratamento Placebo',
     y = 'Coeficiente estimado para o tratamento placebo',
-    title = 'Efeito de Tratamento Placebo Anterior à Regra dos 3s',
+    title = 'Efeito de Tratamento Placebo Posterior à Regra dos 3s',
     subtitle = 'Amostra completa',
     caption = 'Notas:
     1) Resultados de modelos considerando datas alternativas para o tratamento placebo;
@@ -90,7 +90,7 @@ ggplot(df_placebo, aes(x = data_placebo, group = 1)) +
     3) As áreas sombreadas representam intervalos de confiança de 95% (erros padrão HC1)'
   )
 
-ggsave('plots/placebo/placebo_3s_post_brasil.png', width = 6, height = 5)
+ggsave('plots/placebo/brasil_placebo_3s_post.png', width = 6, height = 5)
 
 # Plotting: dois painéis: Placebo + 3s ----------------------------------------
 # Finalizando organização do dataframe para construir o gráfico
@@ -138,4 +138,4 @@ ggplot(mapping = aes(x = data_placebo, group = grupo)) +
     3) As áreas sombreadas representam intervalos de confiança de 95% (erros padrão HC1)'
   )
 
-ggsave('plots/placebo/placebo_3s_post_brasil_2paineis.png', width = 9, height = 6)
+ggsave('plots/placebo/brasil_placebo_3s_post_2paineis.png', width = 9, height = 6)
