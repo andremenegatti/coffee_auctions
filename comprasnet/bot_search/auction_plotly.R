@@ -58,7 +58,7 @@ auction_plotly <- function(df) {
     add_markers(color = ~ Fornecedor, opacity = 0.6,
                 legendgroup = ~ Fornecedor, showlegend = TRUE) %>%
     layout(xaxis = list(title = 'Horario de registro do lance'),
-           yaxis = list(title = 'Desconto (reais)')) 
+           yaxis = list(title = 'Diferença de valor em relação ao menor lance (reais)')) 
   
 
   subplot(p1, p2, nrows = 2,

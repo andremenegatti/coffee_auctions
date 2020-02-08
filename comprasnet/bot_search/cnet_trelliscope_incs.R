@@ -80,12 +80,13 @@ df_plot_data7 <- df_plot_data7 %>%
                  mutate(Fornecedor = fct_reorder(CNPJ_CPF, ranking_bids)))) %>% 
   arrange(desc(n_bids_random))
 
+# Removendo DFs intermediários
+rm(list = setdiff(ls(), 'df_plot_data7'))
+
 # Montando gráficos plotly ----------------------------------------------------
 source('comprasnet/bot_search/auction_plotly.R')
 
-df_test <- df_plot_data7 %>% slice(1:100)
-
-df_plot <- df_test %>%
+df_plot <- df_plot_data7 %>%
   mutate(panel = map_plot(.x = bids_random, .f = ~ auction_plotly(.x)))
 
 # Ajustando cognostics --------------------------------------------------------
@@ -100,7 +101,7 @@ df_plot$abertura_lances <-
 
 df_plot$mes <- 
   cog(df_plot$mes,
-      desc = 'Numero correspondente ao mes em que o leilao foi realizado')
+      desc = 'Mes em que o leilao foi realizado')
 
 df_plot$regime_juridico <- 
   cog(df_plot$regime_juridico, desc = 'Regras aplicaveis de intervalo minimo',
@@ -193,28 +194,39 @@ df_plot$num_forn_lances <-
   cog(df_plot$num_forn_lances, default_label = TRUE,
       desc = 'Numero de fornecedores que participaram da fase de lances')
 
-df_plot$total_lances <- 
-  cog(df_plot$total_lances, default_label = TRUE,
+df_plot$n_bids <- 
+  cog(df_plot$n_bids, default_label = TRUE,
       desc = 'Total de lances registrados no leilao')
 
-df_plot$n_lances_forn1 <- 
-  cog(df_plot$n_lances_forn1, default_label = FALSE, 
+df_plot$n_bids_random <- 
+  cog(df_plot$n_bids_random, default_label = TRUE,
+      desc = 'Total de lances registrados durante a fase aleatoria')
+
+df_plot$n_bids_firm1 <- 
+  cog(df_plot$n_bids_firm1, default_label = FALSE, 
       desc = str_c('Numero de lances submetidos ',
                    'pelo participante que mais deu lances'))
 
-df_plot$n_lances_forn2 <- 
-  cog(df_plot$n_lances_forn2, default_label = FALSE,
+df_plot$n_bids_firm2 <- 
+  cog(df_plot$n_bids_firm2, default_label = FALSE,
       desc = str_c('Numero de lances submetidos ',
                    'pelo segundo participante que mais deu lances'))
 
-df_plot$cnpj_forn1 <- 
-  cog(df_plot$cnpj_forn1,
+df_plot$cnpj_firm1 <- 
+  cog(df_plot$cnpj_firm1,
       desc = 'CNPJ do fornecedor que mais registrou lances')
 
-df_plot$median_inc <- 
-  cog(df_plot$median_inc,
-      desc = str_c('Mediana do incremento entre menores lances, ',
-                   'normalizado pelo primeiro lance'))
+df_plot$median_inc_random <- 
+  cog(df_plot$median_inc_random,
+      desc = str_c('Mediana do incremento entre lances de cobertura ',
+                   'registrados na fase aleatória ',
+                   '(incremento normalizado pelo primeiro lance)'))
+
+df_plot$avg_inc_random <- 
+  cog(df_plot$avg_inc_random,
+      desc = str_c('Media do incremento entre lances de cobertura ',
+                   'registrados na fase aleatoria ',
+                   '(incremento normalizado pelo primeiro lance)'))
 
 # Compilando e salvando -------------------------------------------------------
 trelliscope(df_plot, nrow = 1, ncol = 2,
