@@ -1,66 +1,90 @@
 library(plotly)
+library(crosstalk)
+library(tidyverse)
 library(trelliscopejs)
-library(PregoesBR)
 
 # Importando dados ------------------------------------------------------------
 df_bid_inc <- readRDS('data/cnet_bid_increments.rds')
 
-df_lances_completo <- readRDS('data/cnet_lances.rds')
+df_lances_completo <- readRDS('data/cnet_lances.rds') %>% 
+  filter(data_hora < lubridate::ymd('2016-01-01')) %>%
+  select(-regime_juridico_20s, -regime_juridico_3s)
 
 df_atas <- readRDS('data/cnet_cafe.rds') %>%
-  select(id_item, inicio_fase_aleatoria, situacao, tratamento_diferenciado,
-         decreto_7174, margem_preferencia, melhor_lance, valor_negociado,
-         kg_fornecidos, kg_por_unid, sigla_uf, municipio, nome_uasg,
-         menor_proposta, menor_proposta_global, menor_lance, valor_estimado,
+  select(id_item, abertura_lances, inicio_fase_aleatoria, situacao, 
+         tratamento_diferenciado, decreto_7174, margem_preferencia,
+         melhor_lance, valor_negociado, kg_fornecidos, kg_por_unid,
+         sigla_uf, municipio, nome_uasg, menor_proposta,
+         menor_proposta_global, menor_lance, valor_estimado,
          win_bid_kg, reserve_kg, ano, avg_bids_per_bidder,
          num_forn_propostas, num_forn_lances)
 
 # Data wrangling --------------------------------------------------------------
-df_plot_data <- df_lances_completo %>%
-  select(-regime_juridico_20s, -regime_juridico_3s, -data_abertura) %>%
-  mutate(mes = lubridate::month(abertura_lances) %>% as.factor()) %>%
-  # Aninhando dados relativos aos lances de cada leilao
-  group_by(id_item, abertura_lances, mes, regime_juridico) %>%
-  nest() %>%
-  # Joining dados relativos a leiloes
-  left_join(df_atas, by = 'id_item') %>%
-  mutate(total_lances = map_dbl(.x = data, .f = nrow)) %>%
-  arrange(desc(total_lances)) %>%
-  # Coluna constante com inicio da fase aleatoria nos DFs com dados de lances
-  mutate(data =
-           map2(.x = data, .y = inicio_fase_aleatoria,
-                .f = ~ mutate(.x, inicio_fase_aleatoria = .y))) %>%
-  # Criando ranking de participantes, segundo número de lances submetidos
+# Nesting df_lances no nível do leilão
+df_plot_data <- df_lances_completo  %>%
+  nest(bids = c(-id_item, -abertura_lances, -regime_juridico)) %>% 
+  mutate(mes = lubridate::month(abertura_lances) %>% as.factor())
+
+# Joining dados do leilão
+df_plot_data <- df_plot_data %>% 
+  inner_join(df_atas, by = c('id_item', 'abertura_lances')) %>% 
+  mutate(n_bids = map_dbl(.x = bids, .f = nrow)) %>%
+  arrange(desc(n_bids))
+  
+# Nova coluna bids_random apenas com lances da fase aleatória
+df_plot_data <- df_plot_data %>% 
+  mutate(bids_random = map2(.x = bids, .y = inicio_fase_aleatoria,
+                              .f = ~ filter(.x, data_hora >= .y)),
+         # Coluna com total de lances na fase aleatória
+         n_bids_random = map_dbl(.x = bids_random, .f = nrow))  %>% 
+  # Apenas leiloes com pelo menos 2 participantes na fase aleatória
+  filter(map_lgl(.x = bids_random, .f = ~ length(unique(.x$CNPJ_CPF)) > 1))
+
+# Criando ranking de participantes, segundo número de lances submetidos
+df_plot_data <- df_plot_data %>% 
+  mutate(bids_random = map(.x = bids_random,
+                           .f = ~ count(.x, CNPJ_CPF) %>% 
+                             mutate(ranking_bids = row_number(-n)) %>% 
+                             rename(n_bids_firm = n) %>%
+                             right_join(.x, by = 'CNPJ_CPF')))
+
+# Colunas com lances dos 2 fornecedores mais ativos
+df_plot_data <- df_plot_data %>% 
+  mutate(bidder_no1 = map(.x = bids_random,
+                            .f = ~ filter(.x, ranking_bids == 1)),
+         bidder_no2 = map(.x = bids_random, 
+                           .f = ~ filter(.x, ranking_bids == 2)))
+
+# Numero de lances e CNPJ dos 2 fornecedores mais ativos
+df_plot_data <- df_plot_data %>% 
+  mutate(n_bids_firm1 = map_dbl(.x = bidder_no1, .f = nrow),
+         n_bids_firm2 = map_dbl(.x = bidder_no2, .f = nrow),
+         cnpj_firm1 = map_chr(.x = bidder_no1, .f = ~ .x$CNPJ_CPF[1]),
+         cnpj_firm2 = map_chr(.x = bidder_no2, .f = ~ .x$CNPJ_CPF[1])) %>% 
+  select(-bidder_no1, -bidder_no2) # Não serão mais utilizadas
+
+# Variáveis com mediana e média do incremento normalizado na fase de lances
+df_plot_data <- df_plot_data %>% 
   mutate(
-    data =
-      map(.x = data,
-          .f = ~ group_by(.x, CNPJ_CPF) %>%
-            mutate(n_lances_forn = n()) %>%
-            ungroup() %>%
-            mutate(ranking_lances = row_number(desc(n_lances_forn))) %>%
-            mutate(Fornecedor = integer_to_letter(ranking_lances)))
-         ) %>%
-  mutate(
-    # Variavel com o numero de lances do fornecedor que mais deu lances
-    n_lances_forn1 = map_dbl(.x = data,
-                             .f = ~ filter(.x, ranking_lances == 1) %>% nrow()),
-    # Variavel com o numero de lances do segundo fornecedor que mais deu lances
-    n_lances_forn2 = map_dbl(.x = data,
-                             .f = ~ filter(.x, ranking_lances == 2) %>% nrow()),
-    # CNPJ do fornecedor que mais deu lances
-    cnpj_forn1 = map_chr(.x = data,
-                         .f = ~ filter(.x, ranking_lances == 1) %>% 
-                           select(CNPJ_CPF) %>% slice(1) %>% unlist()),
-    # Incremento/desconto normalizado mediano
-    median_inc = map_dbl(.x = data,
-                         .f = ~ median(.x$norm_inc_first, na.rm = TRUE))
+    median_inc_random = 
+      map_dbl(.x = bids_random, .f = ~ median(.x$norm_inc_first, na.rm = TRUE)),
+    avg_inc_random = 
+      map_dbl(.x = bids_random, .f = ~ mean(.x$norm_inc_first, na.rm = TRUE))
     )
 
+# Convertendo ranking em factor para usar nos gráficos
+df_plot_data <- df_plot_data %>% 
+  mutate(bids_random = 
+           map(.x = bids_random,
+               .f = ~ .x %>% 
+                 mutate(Fornecedor = fct_reorder(CNPJ_CPF, ranking_bids)))) %>% 
+  arrange(desc(n_bids_random))
+
 # Montando gráficos plotly ----------------------------------------------------
+source('comprasnet/bot_search/auction_plotly.R')
+
 df_plot <- df_plot_data %>%
-  mutate(panel = 
-           map_plot(.x = data, .f = ~ PregoesBR::bid_plot(data = .x))) %>%
-  select(-data)
+  mutate(panel = map_plot(.x = bids_random, .f = ~ auction_plotly(.x)))
 
 # Ajustando cognostics --------------------------------------------------------
 df_plot$id_item <- 
@@ -74,7 +98,7 @@ df_plot$abertura_lances <-
 
 df_plot$mes <- 
   cog(df_plot$mes,
-      desc = 'Numero correspondente ao mes em que o leilao foi realizado')
+      desc = 'Mes em que o leilao foi realizado')
 
 df_plot$regime_juridico <- 
   cog(df_plot$regime_juridico, desc = 'Regras aplicaveis de intervalo minimo',
@@ -145,12 +169,12 @@ df_plot$valor_estimado <-
 
 df_plot$win_bid_kg <-
   cog(df_plot$win_bid_kg, default_label = TRUE,
-      desc = 'Lance vencedor em R$/kg, deflacionado pelo IPCA')
+      desc = 'Lance vencedor em R$/kg, em preços de dez/2015 (IPCA)')
 
 df_plot$reserve_kg <-
   cog(df_plot$reserve_kg,
       desc = str_c('Preco de reserva; valor estimado informado',
-                   ' no edital, em R$/kg, deflacionado pelo IPCA'))
+                   ' no edital, em R$/kg, em preços de dez/2015 (IPCA)'))
 
 df_plot$ano <- 
   cog(df_plot$ano, desc = 'Ano de realizacao do leilao')
@@ -167,31 +191,42 @@ df_plot$num_forn_lances <-
   cog(df_plot$num_forn_lances, default_label = TRUE,
       desc = 'Numero de fornecedores que participaram da fase de lances')
 
-df_plot$total_lances <- 
-  cog(df_plot$total_lances, default_label = TRUE,
+df_plot$n_bids <- 
+  cog(df_plot$n_bids, default_label = TRUE,
       desc = 'Total de lances registrados no leilao')
 
-df_plot$n_lances_forn1 <- 
-  cog(df_plot$n_lances_forn1, default_label = FALSE, 
+df_plot$n_bids_random <- 
+  cog(df_plot$n_bids_random, default_label = TRUE,
+      desc = 'Total de lances registrados durante a fase aleatoria')
+
+df_plot$n_bids_firm1 <- 
+  cog(df_plot$n_bids_firm1, default_label = FALSE, 
       desc = str_c('Numero de lances submetidos ',
                    'pelo participante que mais deu lances'))
 
-df_plot$n_lances_forn2 <- 
-  cog(df_plot$n_lances_forn2, default_label = FALSE,
+df_plot$n_bids_firm2 <- 
+  cog(df_plot$n_bids_firm2, default_label = FALSE,
       desc = str_c('Numero de lances submetidos ',
                    'pelo segundo participante que mais deu lances'))
 
-df_plot$cnpj_forn1 <- 
-  cog(df_plot$cnpj_forn1,
+df_plot$cnpj_firm1 <- 
+  cog(df_plot$cnpj_firm1,
       desc = 'CNPJ do fornecedor que mais registrou lances')
 
-df_plot$median_inc <- 
-  cog(df_plot$median_inc,
-      desc = str_c('Mediana do incremento entre menores lances, ',
-                   'normalizado pelo primeiro lance'))
+df_plot$median_inc_random <- 
+  cog(df_plot$median_inc_random,
+      desc = str_c('Mediana do incremento entre lances de cobertura ',
+                   'registrados na fase aleatória ',
+                   '(incremento normalizado pelo primeiro lance)'))
+
+df_plot$avg_inc_random <- 
+  cog(df_plot$avg_inc_random,
+      desc = str_c('Media do incremento entre lances de cobertura ',
+                   'registrados na fase aleatoria ',
+                   '(incremento normalizado pelo primeiro lance)'))
 
 # Compilando e salvando -------------------------------------------------------
 trelliscope(df_plot, nrow = 1, ncol = 2,
-            name = 'Comprasnet', path = 'plots/trelliscope',
+            name = 'Comprasnet', path = 'plots/trelliscope/complete',
             desc = str_c('Leiloes eletronicos de compra de cafe realizados no',
                          ' Comprasnet entre 01/03/2011 e 31/12/2017'))

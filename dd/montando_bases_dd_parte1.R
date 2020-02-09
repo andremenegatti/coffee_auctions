@@ -18,7 +18,7 @@ qualidade <- readRDS('data/controles_qualidade.rds') %>%
 # Unidades compradoras selecionadas - LASSO
 selected_uasgs_list <- 
   map(.x = str_c('data/', c('bec', 'cnet', 'cnet_sp'),
-                 '_selected_uasgs_soft_trim.rds'),
+                 '_selected_uasgs.rds'),
       .f = readRDS) %>%
   map(.f = ~ select(.x, id_item, unidade_compradora_lasso = lasso) %>%
         mutate(unidade_compradora_lasso = 

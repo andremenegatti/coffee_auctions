@@ -1,26 +1,15 @@
 library(PregoesBR)
 
-df_atas <- readRDS("data/cnet_cafe.rds")
+df_bid_inc <- readRDS('data/cnet_bid_increments.rds') %>% 
+  select(id_item, abertura_lances, regime_juridico_20s, bid_increments)
 
-# Filtrando e selecionando
-df_intervalo <- df_atas %>%
-  # CORTE: APENAS APOS MARCO/2011
-  filter(abertura_lances >= '2011-03-01') %>%
-  select(id_item, id_item,
-         regime_juridico, regime_juridico_20s, abertura_lances,
-         inicio_ano, inicio_trimestre, inicio_bimestre,
-         inicio_semestre, inicio_mes, inicio_semana,
-         lances_clean) %>%
-  # Removendo observacoes em que nao houve lances (apenas propostas)
-  filter(map_dbl(.x = lances_clean, .f = ~ nrow(.x)) > 1) %>%
-  # Excluindo obs sem coluna 'valor_lance' no historico de lances
-  filter(map_lgl(.x = lances_clean, .f = ~ 'valor_lance' %in% names(.x)))
-
-# Aninhando por CNPJ (dentro de cada DF de lances_clean)
-df_intervalo2 <- df_intervalo %>%
+# Aninhando por CNPJ (dentro de cada DF de bid_increments)
+df_intervalo2 <- df_bid_inc %>%
   mutate(intervalo_mesmo_fornecedor =
-           map(.x = lances_clean,
-               .f = ~ nest(.x, data = c(valor_lance, data_hora))))
+           map(.x = bid_increments,
+               .f = ~ .x %>% 
+                 select(data_hora, CNPJ_CPF, valor_lance, valor_lance_kg_defl) %>% 
+                 nest(data = c(-CNPJ_CPF))))
 
 # Excluindo DFs referentes a fornecedores que deram menos de 2 lances por leilao
 df_intervalo3 <- df_intervalo2 %>%
@@ -32,40 +21,48 @@ df_intervalo3 <- df_intervalo2 %>%
 df_intervalo4 <- df_intervalo3 %>%
   mutate(
     intervalo_mesmo_fornecedor_clean =
-      map(.x = intervalo_mesmo_fornecedor_clean,
-          .f = ~ .x %>%
-            mutate(data =
-                     map(.x = data,
-                         .f = ~ .x %>%
-                           mutate(
-
-                             intervalo_lance_proprio =
-                               calcular_intervalo_lances(data_hora),
-
-                             incremento_lance_proprio_bruto =
-                               valor_lance - lag(valor_lance),
-
-                             incremento_lance_proprio =
-                               incremento_lance_proprio_bruto/first(valor_lance)
-
-                             ) %>%
-                           # Excluindo NA do primeiro lance de cada fornecedor
-                           filter(!is.na(intervalo_lance_proprio))))
+      map(
+        .x = intervalo_mesmo_fornecedor_clean,
+        .f = ~ .x %>%
+          mutate(
+            data =
+              map(
+                .x = data,
+                .f = ~ .x %>%
+                  arrange(data_hora) %>% 
+                  mutate(
+                    intervalo_proprio =
+                      calcular_intervalo_lances(data_hora),
+                    incremento_proprio = 
+                      valor_lance_kg_defl - lag(cummin(.$valor_lance_kg_defl)),
+                    incremento_proprio_bruto =
+                      valor_lance - lag(valor_lance),
+                    incremento_proprio_norm =
+                      incremento_proprio_bruto / lag(valor_lance)
+                  ) %>%
+                  # Excluindo NA do primeiro lance de cada fornecedor
+                  filter(!is.na(intervalo_proprio))
+              )
           )
-    )
+      )
+  )
 
 # Desaninhando DFs dos fornecedores
 df_intervalo5 <- df_intervalo4 %>%
   mutate(intervalo_mesmo_fornecedor_clean =
            map(.x = intervalo_mesmo_fornecedor_clean,
-               .f = ~ unnest(.x, cols = data)))
+               .f = ~ unnest(.x, cols = data) %>% 
+                 arrange(data_hora)))
 
 # Selecionando colunas e desaninhando DFs de intervalos
 df_intervalo6 <- df_intervalo5 %>%
-  select(id_item, id_item, regime_juridico, regime_juridico_20s,
-         abertura_lances, inicio_ano, inicio_trimestre, inicio_bimestre,
-         inicio_semestre, inicio_mes, inicio_semana,
+  select(id_item, abertura_lances, regime_juridico_20s,
          intervalo_mesmo_fornecedor_clean) %>%
-  unnest(cols = intervalo_mesmo_fornecedor_clean)
+  unnest(cols = intervalo_mesmo_fornecedor_clean) %>% 
+  select(-data)
 
-saveRDS(df_intervalo6, 'data/cnet_intervalo_mesmo_fornecedor.rds')
+# Removendo dois lances duplicados
+df_intervalo7 <- df_intervalo6 %>% 
+  distinct(id_item, CNPJ_CPF, valor_lance, data_hora, .keep_all = TRUE)
+
+saveRDS(df_intervalo7, 'data/cnet_intervalo_mesmo_fornecedor.rds')

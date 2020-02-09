@@ -4,6 +4,7 @@ dd/placebo/data/
 old/*
 plots/trelliscope/*
 plots/bot_search/*.html
+comprasnet/bot_search/old/
 
 # History files
 .Rhistory

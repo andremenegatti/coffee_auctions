@@ -1,16 +1,16 @@
 library(tidyverse)
 
-df_bid_inc_unnested <- readRDS('comprasnet/cnet_df_bid_inc_unnested.rds')
+df_bid_inc_unnested <- readRDS('data/cnet_negative_bid_increments_unnested.rds')
 
 # Excluindo outliers
-cut <- quantile(df_bid_inc_unnested$intervalo_menor_lance, 0.975)
+cut <- quantile(df_bid_inc_unnested$intervalo_menor, 0.975)
 
 df_intervalo <- df_bid_inc_unnested %>%
-  filter(intervalo_menor_lance < cut)
+  filter(intervalo_menor < cut)
 
 # Histograma
 ggplot(df_intervalo) +
-  geom_histogram(aes(x = intervalo_menor_lance, y = ..density..),
+  geom_histogram(aes(x = intervalo_menor, y = ..density..),
                  alpha = 0.6, binwidth = 0.25, col = 'white',
                  fill = 'gray', size = .1, position = 'identity') +
   scale_x_continuous(breaks = c(3, seq(10, 40, by = 10))) +
@@ -31,4 +31,5 @@ ggplot(df_intervalo) +
         plot.caption = element_text(hjust = 0, size = 10)) +
   facet_wrap(~ regime_juridico_3s, ncol = 1, nrow = 2)
 
-# ggsave('plots/histograma_intervalo_3s.png', width = 9, height = 7)
+# ggsave('plots/intervalo_3s/histograma_intervalo_3s.png',
+#        width = 9, height = 7)

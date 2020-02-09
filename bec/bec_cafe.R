@@ -1,7 +1,11 @@
 library(PregoesBR)
 
+# Definindo índice de referência para deflacionar valores ---------------------
+ipca_periodo_referencia <- 4493.17 # IPCA dez/2015
+
+# Importando dados ------------------------------------------------------------
 # Dados principais
-bec_cafe <- readRDS('bec/montando_base_v2/bec_cafe_raw_v2.rds')
+bec_cafe <- readRDS('data/bec_cafe_raw.rds')
 
 # Dados de municipios
 bec_municipios <- readRDS("data/bec_municipios_pregoes.rds") %>%
@@ -37,8 +41,9 @@ bec_cafe <- bec_cafe %>%
   rename(indice_ipca_mes = ipca) %>%
   # Deflacionando melhor lance bruto
   mutate(melhor_lance_bruto_defl =
-           deflacionar(melhor_lance_bruto,
-                       indice_no_periodo = indice_ipca_mes))
+           PregoesBR::deflacionar(melhor_lance_bruto,
+                                  indice_referencia = ipca_periodo_referencia,
+                                  indice_no_periodo = indice_ipca_mes))
 
 # Correção: limite de preços --------------------------------------------------
 bec_cafe <- bec_cafe %>%
@@ -114,4 +119,4 @@ bec_cafe <- bec_cafe %>%
          lances = lances_clean, preferencia_df:win_bid_kg,
          avg_bids_per_bidder:num_lances_total)
 
-saveRDS(bec_cafe, 'bec/montando_base_v2/bec_cafe_v2.rds')
+saveRDS(bec_cafe, 'data/bec_cafe.rds')

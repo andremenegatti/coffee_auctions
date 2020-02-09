@@ -1,5 +1,8 @@
 library(PregoesBR)
 
+# Definindo índice de referência para deflacionar valores ---------------------
+ipca_periodo_referencia <- 4493.17 # IPCA dez/2015
+
 # CARREGANDO BASES ------------------------------------------------------------
 df_API_original <- readRDS('data/cnet_api_cafe.rds')
 
@@ -153,10 +156,14 @@ df_atas <- read_csv('data/ipca.csv') %>%
 df_atas <- df_atas %>%
   mutate(
     val_est_kg_defl =
-      deflacionar(val_est_kg, indice_no_periodo = indice_ipca_mes),
+      PregoesBR::deflacionar(val_est_kg,
+                             indice_referencia = ipca_periodo_referencia,
+                             indice_no_periodo = indice_ipca_mes),
 
     melhor_lance_kg_defl =
-      deflacionar(melhor_lance_kg, indice_no_periodo = indice_ipca_mes)
+      PregoesBR::deflacionar(melhor_lance_kg,
+                             indice_referencia = ipca_periodo_referencia,
+                             indice_no_periodo = indice_ipca_mes)
     ) %>%
   filter(ano != '2018') # <<<<
 
@@ -183,11 +190,14 @@ df_atas <- df_atas %>%
       corrigir_erro_missing(quantidade_resultado, val_est_kg, quantidade),
 
     win_bid_missing =
-      deflacionar(x = melhor_lance_missing,
-                  indice_no_periodo = indice_ipca_mes),
+      PregoesBR::deflacionar(x = melhor_lance_missing,
+                             indice_referencia = ipca_periodo_referencia,
+                             indice_no_periodo = indice_ipca_mes),
 
     reserve_missing =
-      deflacionar(x = val_est_missing, indice_no_periodo = indice_ipca_mes)
+      PregoesBR::deflacionar(x = val_est_missing,
+                             indice_referencia = ipca_periodo_referencia,
+                             indice_no_periodo = indice_ipca_mes)
     )
 
 # CORRIGINDO: DADOS DE PROPOSTAS ----------------------------------------------
@@ -204,11 +214,13 @@ df_atas <- df_atas %>%
 
     win_bid_kg =
       if_else(preco_global, melhor_lance_kg / quantidade, melhor_lance_kg) %>%
-      deflacionar(indice_no_periodo = indice_ipca_mes),
+      PregoesBR::deflacionar(indice_referencia = ipca_periodo_referencia,
+                             indice_no_periodo = indice_ipca_mes),
 
     reserve_kg =
       if_else(preco_global, val_est_kg / quantidade, val_est_kg) %>%
-      deflacionar(indice_no_periodo = indice_ipca_mes)
+      PregoesBR::deflacionar(indice_referencia = ipca_periodo_referencia,
+                             indice_no_periodo = indice_ipca_mes)
     )
 
 # NUMERO DE FORNECEDORES ------------------------------------------------------

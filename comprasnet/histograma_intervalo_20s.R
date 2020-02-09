@@ -1,22 +1,22 @@
 library(tidyverse)
 
 df_intervalo_mesmo_fornecedor <-
-  readRDS('comprasnet/cnet_df_intervalo_mesmo_fornecedor.rds')
+  readRDS('data/cnet_intervalo_mesmo_fornecedor.rds')
 
 # Eliminando outliers (2,5% maiores intervalos)
-cut <- quantile(df_intervalo_mesmo_fornecedor$intervalo_lance_proprio, 0.975)
+cut <- quantile(df_intervalo_mesmo_fornecedor$intervalo_proprio, 0.975)
 
 df_int <- df_intervalo_mesmo_fornecedor %>%
-  filter(intervalo_lance_proprio < cut)
+  filter(intervalo_proprio < cut)
 
 # Estatisticas descritivas
-df_int$intervalo_lance_proprio %>% summary()
+df_int$intervalo_proprio %>% summary()
 PregoesBR::get_summary_stats(df_int,
-                             intervalo_lance_proprio, regime_juridico_20s)
+                             intervalo_proprio, regime_juridico_20s)
 
 # Histograma
 ggplot(df_int) +
-  geom_histogram(aes(x = intervalo_lance_proprio, y = ..density..),
+  geom_histogram(aes(x = intervalo_proprio, y = ..density..),
                  binwidth = 0.5, alpha = 0.6, col = 'white',
                  fill = 'gray', size = .1, position = 'identity') +
   scale_x_continuous(breaks = seq(0, 120, by = 20)) +
@@ -37,4 +37,5 @@ ggplot(df_int) +
         plot.caption = element_text(hjust = 0, size = 10)) +
   facet_wrap(~ regime_juridico_20s, ncol = 1, nrow = 2)
 
-# ggsave('plots/histograma_intervalo_20s.png', width = 9, height = 7)
+# ggsave('plots/intervalo_20s/histograma_intervalo_20s.png',
+#        width = 9, height = 7)
