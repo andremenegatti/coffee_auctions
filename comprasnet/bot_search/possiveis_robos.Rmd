@@ -1,0 +1,54 @@
+---
+title: "Relatório Sobre Possíveis Robôs"
+author: "André Luís Menegatti"
+date: "2/11/2020"
+output: html_document
+---
+### Destaques
+
+#### Robô mais evidente
+* 22.122.311/0001-66 (José Carlos Sales Ribeiro - Andradas/MG)
+  + Ativo nos Períodos 2 e 3
+  + Grande número de lances por pregão
+  + Incrementos muito baixos e altamente padronizados
+  + Sem muita padronização nos intervalos, mas em alguns casos cobre o menor lance em menos de 3s
+
+#### Ativos em todos os períodos, com mudança de comportamento
+* 11.221.523/0001-84 (Ivy Macedo Ribeiro - Andradas/MG)
+  + Em geral, poucos lances nos pregões do período pré-tratamento, mas isso muda já no primeiro semestre de 2012
+  + A partir do Período 2, incrementos pequenos e padronizados, com resposta rápida ao menor lance (muitas vezes próximo à marca de 3s)
+  
+* 13.434.138/0001-40 (São Luís Alimentos Ltda. - São Luís de Montes Belos/GO)
+  + Em geral, poucos lances nos leilões pré-tratamento, mas parece haver uma mudança em abril/2012
+  + Muitos lances, incremento baixo (vide 17019800001320120002)
+
+#### Robô ativo em todos os períodos
+* 06.946.072/0001-02 (Quality Distribuidora de Alimentos Ltda. - Andradas/MG)
+  + Lances de cobertura próximos à marca de 3s
+
+#### Pouca padronização de incrementos
+* 11.282.541/0001-76 (Sena Comércio de Prod Alimenticios EIRELI - Campo Belo/MG)
+  + Ativo nos Períodos 1 e 2
+  + Resposta rápida ao menor lance, mas incrementos bastante variáveis
+
+### Outros possíveis robôs, por período de atividade
+#### Período 1 (sem intervalo mínimo)
+* 37.153.715/0001-94 (Psiu Recicláveis - Brasília/DF)
+
+#### Período 2 (Regra 20s)
+* 09.341.816/0001-53 MAX LEAL SOLANO CAVALCANTE - Mossoró/RN
+* 18.768.894/0001-20 COMERCIAL MINAS BRASILIA EIRELI - Brasília/DF
+* 01.663.647/0001-66 GUTA DISTRIBUIDORA DE PRODUTOS ALIMENTICIOS - Porto Velho/RO
+* 09.270.460/0001-04 G. S. A. COMERCIO E SERVICOS - Anápolis
+
+#### Período 3 (Regra 20s + Regra 3s)
+* 13.812.746/0001-41 COMERCIO E INDUSTRIA IRMAOS REIS EIRELI - Brasília/DF
+* 06.985.398/0001-49 COMERCIO DE PRODUTOS ALIMENTICIOS DI PRIMEIRA - Alfenas/MG
+* 19.964.698/0001-93 ALD COMERCIO E PRESTACAO DE SERVICO LTDA - Rio de Janeiro/RJ
+* 19.507.554/0001-08 COMERCIAL DE ALIMENTOS YAMASHITA - Ponta Porã/MS
+* 64.106.552/0001-61 DPS ALIMENTOS - Bariri/SP
+
+### Investigar mais
+* 18.875.950/0001-25
+* 11.877.124/0001-76
+* 17.246.459/0001-72
