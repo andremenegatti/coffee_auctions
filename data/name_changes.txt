@@ -1,0 +1,7 @@
+cnet_cafe = df_cafe_completo
+cnet_atas_cafe = df_atas_cafe
+cnet_uasgs = COMPRASNET_uags
+
+cnet_cafe depois passou a ser cnet_api_cafe
+
+o novo cnet_cafe é a base com dados do API e das atas, limpa.

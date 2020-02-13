@@ -8,7 +8,7 @@ df_intervalo_mesmo_fornecedor <-
 df_bid_inc <- readRDS('data/cnet_bid_increments.rds') %>% 
   filter(abertura_lances < '2016-01-01')
 
-df_bid_inc_unnested <- readRDS("data/cnet_bid_increments_unnested.rds") %>% 
+df_bid_inc_unnested <- readRDS("data/cnet_negative_bid_increments_unnested.rds") %>% 
   filter(data_hora < '2016-01-01')
 
 df_lances <- readRDS('data/cnet_lances.rds') %>% 
@@ -18,14 +18,14 @@ df_lances <- readRDS('data/cnet_lances.rds') %>%
 # Número de lances por fornecedor em cada pregão
 df_forn_lances_por_pregao <- df_lances %>%
   count(CNPJ_CPF, abertura_lances, id_item, regime_juridico) %>%
-  arrange(desc(n))
+  arrange(desc(n)) ; df_forn_lances_por_pregao
 
 # Número de leilões por fornecedor
 df_forn_num_pregoes <- df_forn_lances_por_pregao %>%
   group_by(CNPJ_CPF, regime_juridico) %>%
   summarise(n_auctions = n()) %>%
   ungroup() %>%
-  arrange(desc(n_auctions))
+  arrange(desc(n_auctions)) ; df_forn_num_pregoes
 
 # Juntando duas bases acima
 df_forn_lances_e_pregoes <- df_lances %>%
@@ -33,33 +33,31 @@ df_forn_lances_e_pregoes <- df_lances %>%
   rename(n_bids = n) %>%
   inner_join(df_forn_num_pregoes, by = c('CNPJ_CPF', 'regime_juridico')) %>%
   mutate(bids_auction_ratio = n_bids / n_auctions) %>% 
-  arrange(desc(n_auctions, n_bids))
-
-df_forn_lances_e_pregoes
+  arrange(desc(n_auctions, n_bids)) ; df_forn_lances_e_pregoes
 
 # Estatisticas relativas a incrementos e intervalos de cada fornecedor --------
 # Apenas lances de cobertura <<<<
 df_stats_menor_lance <- df_bid_inc_unnested %>%
   group_by(CNPJ_CPF) %>%
   summarise(n_inc = n(),
-            avg_inc_first = mean(norm_inc_first),
-            median_inc_first = median(norm_inc_first),
-            sd_inc_first = sd(norm_inc_first),
-            avg_intervalo_lance_anterior = mean(intervalo_lance_anterior),
-            median_intervalo_lance_anterior = median(intervalo_lance_anterior),
-            sd_intervalo_lance_anterior = sd(intervalo_lance_anterior),
-            avg_intervalo_menor_lance = mean(intervalo_menor_lance),
-            median_intervalo_menor_lance = median(intervalo_menor_lance),
-            sd_intervalo_menor_lance = sd(intervalo_menor_lance)) %>%
+            avg_inc_first = mean(norm_inc_first, na.rm = TRUE),
+            median_inc_first = median(norm_inc_first, na.rm = TRUE),
+            sd_inc_first = sd(norm_inc_first, na.rm = TRUE),
+            avg_intervalo_anterior = mean(intervalo_anterior, na.rm = TRUE),
+            median_intervalo_anterior = median(intervalo_anterior, na.rm = TRUE),
+            sd_intervalo_anterior = sd(intervalo_anterior, na.rm = TRUE),
+            avg_intervalo_menor = mean(intervalo_menor, na.rm = TRUE),
+            median_intervalo_menor = median(intervalo_menor, na.rm = TRUE),
+            sd_intervalo_menor = sd(intervalo_menor, na.rm = TRUE)) %>%
   ungroup()
 
 # Estatisticas relativas a intervalos entre lances próprios -------------------
 df_stats_lances_proprios <- df_intervalo_mesmo_fornecedor %>%
   group_by(CNPJ_CPF) %>%
-  summarise(n_mesmo_fornecedor = n(),
-            avg_int_mesmo_forn = mean(intervalo_lance_proprio),
-            median_int_mesmo_forn = median(intervalo_lance_proprio),
-            sd_int_mesmo_forn = sd(intervalo_lance_proprio)) %>%
+  summarise(n_proprio = n(),
+            avg_int_proprio = mean(intervalo_proprio),
+            median_int_proprio = median(intervalo_proprio),
+            sd_int_proprio = sd(intervalo_proprio)) %>%
   ungroup()
 
 # Número de lances registrados por cada fornecedor ----------------------------

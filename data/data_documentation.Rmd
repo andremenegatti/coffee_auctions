@@ -1,0 +1,14 @@
+---
+title: "data_documentation"
+author: "André Luís Menegatti"
+date: "1/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+`bec_fornecedores`: DESC_ATA_GERADAPR.OCCompleta.Fornecedores
