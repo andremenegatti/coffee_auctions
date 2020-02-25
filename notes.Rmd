@@ -55,6 +55,9 @@ of the interventions themselves." (Bertrand, Duflo, Mullainathan, 2004)
 * Checar se não houve mudança na composição dos grupos ao longo do tratamento
   + *e.g.*: aumento/diminuição das compras para presídios
 
+# Top UASGs
+* Selecionar apenas com base em valores pré-tratamento
+
 # Erros-padrão
 * Testar homoscedasticidade
   + Breusch-Pagan, 1979
