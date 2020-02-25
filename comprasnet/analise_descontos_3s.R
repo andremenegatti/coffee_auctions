@@ -1,6 +1,7 @@
 library(PregoesBR)
 
-df_bid_inc_unnested <- readRDS("comprasnet/cnet_df_bid_inc_unnested.rds")
+df_bid_inc_unnested <- 
+  readRDS("data/cnet_negative_bid_increments_unnested.rds")
 
 # Grande concentracao de incrementos em valores proximos de zero
 ggplot(df_bid_inc_unnested, aes(x = -norm_inc_first)) +
@@ -11,6 +12,7 @@ ggplot(df_bid_inc_unnested, aes(x = -norm_inc_first)) +
 
 # Removendo outliers (5% mais baixo de cada ano) e incrementos positivos
 df_inc <- df_bid_inc_unnested %>%
+  create_time_variables() %>% 
   # Garantindo que temos apenas incrementos negativos
   filter(norm_inc_first < 0) %>%
   # Trimming (5% de cada ano)
@@ -30,7 +32,9 @@ df_inc %>%
   get_summary_stats(norm_neg_inc * 100, regime_juridico_3s)
 
 # HISTOGRAMA ------------------------------------------------------------------
-histogram <- ggplot(df_inc, aes(x = norm_neg_inc * 100)) +
+histogram <- df_inc %>% 
+  filter(abertura_lances < '2016-01-01') %>% 
+  ggplot(aes(x = norm_neg_inc * 100)) +
   geom_histogram(alpha = 0.8,
                  col = 'white',
                  fill = 'gray',
@@ -47,7 +51,9 @@ histogram
 # ggsave('plots/histograma_incremento_first_3s.png', width = 9, height = 7)
 
 # DENSIDADE -------------------------------------------------------------------
-density_plot <- ggplot(df_inc, aes(x = norm_neg_inc * 100)) +
+density_plot <- df_inc %>% 
+  filter(abertura_lances < '2016-01-01') %>%
+  ggplot(aes(x = norm_neg_inc * 100)) +
   stat_density(col = 'black', geom = 'line', position = 'identity',
                aes(linetype = regime_juridico_3s)) +
   scale_x_continuous(labels =
@@ -61,10 +67,17 @@ density_plot <- ggplot(df_inc, aes(x = norm_neg_inc * 100)) +
        1. Foram considerados apenas lances que representaram redução de preço em relação ao melhor lance anteriormente registrado.
        2. Ambas as distribuições possuem uma longa cauda à direita, não totalmente exibida para melhor visualização.') +
   my_theme() +
-  coord_cartesian(xlim = c(0, 1))
+  coord_cartesian(xlim = c(0, 1.5))
 
 density_plot
 # ggsave('plots/densidade_incremento_first_3s.png', width = 9, height = 7)
+
+# DENSITY RIDGES --------------------------------------------------------------
+ggplot(df_inc) +
+  ggridges::geom_density_ridges(
+    aes(x = norm_neg_inc, y = inicio_semestre, group = inicio_semestre)
+  ) +
+  coord_cartesian(xlim = c(0, 0.01))
 
 # ECDF ------------------------------------------------------------------------
 df_ecdf <- df_inc %>%
@@ -81,7 +94,7 @@ ecdf_plot <- ggplot(df_ecdf) +
     y = 'Probabilidade acumulada',
     title = 'Impacto da Regra dos 3s sobre os descontos entre lances',
     subtitle = 'ECDF dos descontos dos lances de cobertura, por regime juridico'
-    ) +
+  ) +
   scale_linetype_discrete(name = 'Vigência Regra 3s') +
   scale_y_continuous(labels = formatar_numero) +
   scale_x_continuous(labels = function(x) paste0(x, '%'))
@@ -90,6 +103,7 @@ ecdf_plot
 # ggsave(filename = 'plots/ecdf_incremento_first_3s.png', width = 9, height = 7)
 
 # SMOOTH ----------------------------------------------------------------------
+# Continuous
 smooth_plot <- ggplot(df_inc) +
   geom_smooth(aes(x = as.Date(abertura_lances), y = norm_neg_inc * 100),
               col = 'black') +
@@ -98,7 +112,7 @@ smooth_plot <- ggplot(df_inc) +
                            texto = c('Regra 20s', 'Regra 3s')),
              aes(x = data, y = 0.5, label = texto), family = 'serif') +
   scale_y_continuous(labels = function(x) str_replace(paste0(x, '%'), '\\.', ',')) +
-  scale_x_date(breaks = 'year', labels = 2011:2018) +
+  # scale_x_date(breaks = 'year', labels = 2011:2015) +
   coord_cartesian(xlim = c('2011-03-01', '2015-12-31') %>% as.Date() ) +
   labs(x = 'Data',
        y = 'Redução de preço como % do primeiro lance',
@@ -107,3 +121,21 @@ smooth_plot <- ggplot(df_inc) +
 
 smooth_plot
 # ggsave(filename = 'plots/smooth_incremento_first_3s.png', width = 9, height = 7)
+
+# Split
+ggplot(df_inc) +
+  geom_smooth(aes(x = as.Date(abertura_lances), y = norm_neg_inc * 100,
+                  group = regime_juridico),
+              col = 'black') +
+  geom_vline(xintercept = c(data_20s, data_3s), linetype = 'dotted') +
+  geom_label(data = tibble(data = c(data_20s, data_3s),
+                           texto = c('Regra 20s', 'Regra 3s')),
+             aes(x = data, y = 0.52, label = texto), family = 'serif') +
+  scale_y_continuous(labels = function(x) str_replace(paste0(x, '%'), '\\.', ',')) +
+  # scale_x_date(breaks = 'year', labels = 2011:2015) +
+  coord_cartesian(xlim = c('2011-03-01', '2015-08-31') %>% as.Date() ) +
+  labs(x = 'Data',
+       y = 'Redução de preço como % do primeiro lance',
+       title = 'Evolução do desconto dos lances de cobertura ao longo do tempo',
+       subtitle = 'Regressão não-paramétrica (GAM)')
+# ggsave(filename = 'plots/smooth_incremento_first_3s_gam_split.png', width = 9, height = 7)

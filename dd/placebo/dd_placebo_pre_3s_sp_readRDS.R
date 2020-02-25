@@ -1,57 +1,24 @@
 library(tidyverse)
 
-# Carregando base de dados
-dd_brasil <- readRDS('data/dd_brasil.rds')
-
-# Attaching DF para simplificar o codigo
-attach(dd_brasil)
-
-# Rodando Modelos Placebo -----------------------------------------------------
 df_placebo <-
-  tibble(data_placebo = seq(-300, -30, by = 3) + data_3s) %>%
-  mutate(
-    treat1 = map(
-      .x = data_placebo,
-      .f = ~ ifelse(
-        comprasnet == 1 & abertura_lances >= data_20s & abertura_lances < .x,
-        1, 0)
-    ),
-    treat_placebo = map(
-      .x = data_placebo,
-      .f = ~ ifelse(
-        comprasnet == 1 & abertura_lances >= .x & abertura_lances < data_3s,
-        1, 0)
-    ),
-    treat2 = map(
-      .x = data_placebo,
-      .f = ~ ifelse(comprasnet == 1 & abertura_lances >= data_3s, 1, 0)
-    )
-  ) %>%
-  mutate(
-    model_summary = pmap(
-      .l = list(treat1, treat2, treat_placebo),
-      .f = ~ lm(log_win_bid ~ ..1 + ..2 + ..3 + qualidade + kg_por_unid + 
-                  arab_defl + bimestre + sigla_uf:bimestre + 
-                  municipio + unidade_compradora)
-    )
-  )
+  tibble(data_placebo = seq(-420, -30, by = 3) + data_3s) %>% 
+  mutate(model_list =
+           map(.x = data_placebo,
+               .f = ~ str_c('dd/placebo/data/teste_sp/',
+                            as.character(.x), '.rds') %>% readRDS()))
 
-# Extraindo e organizando resultados ------------------------------------------
-# Extraindo coeficientes estimados
-df_placebo <- df_placebo %>%
-  rename(model = model_summary) %>%
-  mutate(treat1_est = map_dbl(.x = model, .f = ~ coef(.x)[2]),
-         treat2_est = map_dbl(.x = model, .f = ~ coef(.x)[3]),
-         treat_placebo_est = map_dbl(.x = model, .f = ~ coef(.x)[4]))
-
-# Computando erros-padrão robustos à heteroscedasticidade
-df_placebo <- df_placebo %>%
-  mutate(standard_errors = 
-           map(.x = model,
-               .f = ~ PregoesBR::get_robust_std_errors(.x))) %>%
-  mutate(treat1_se = map_dbl(.x = standard_errors, .f = ~ .x$std_error[2]),
-         treat2_se = map_dbl(.x = standard_errors, .f = ~ .x$std_error[3]),
-         treat_placebo_se = map_dbl(.x = standard_errors,
+df_placebo <- df_placebo %>% 
+  mutate(treat1_est = map_dbl(.x = model_list,
+                              .f = ~ .x$estimate[2]),
+         treat2_est = map_dbl(.x = model_list,
+                              .f = ~ .x$estimate[3]),
+         treat_placebo_est = map_dbl(.x = model_list,
+                                     .f = ~ .x$estimate[4]),
+         treat1_se = map_dbl(.x = model_list,
+                             .f = ~ .x$std_error[2]),
+         treat2_se = map_dbl(.x = model_list,
+                             .f = ~ .x$std_error[3]),
+         treat_placebo_se = map_dbl(.x = model_list,
                                     .f = ~ .x$std_error[4]))
 
 # Computando intervalos de confiança 95%
@@ -63,11 +30,8 @@ df_placebo <- df_placebo %>%
          treat_placebo_upper = treat_placebo_est + 2*treat_placebo_se,
          treat_placebo_lower = treat_placebo_est - 2*treat_placebo_se)
 
-# Selecionando apenas variaveis de interesse e salvando
-df_placebo_results <- df_placebo %>% 
-  select(-model, -standard_errors, -treat1, -treat2, -treat_placebo)
+df_placebo %>% glimpse()
 
-saveRDS(df_placebo_results, 'dd/placebo/data/placebo_pre_3s_brasil_results.rds')
 
 # Plotting: efeito do tratamento placebo --------------------------------------
 ggplot(df_placebo, aes(x = data_placebo, group = 1)) +
@@ -75,26 +39,25 @@ ggplot(df_placebo, aes(x = data_placebo, group = 1)) +
   geom_ribbon(aes(ymin = treat_placebo_lower, ymax = treat_placebo_upper),
               fill = 'gray', alpha = 0.5) +
   geom_hline(yintercept = 0) +
-  scale_x_date(breaks = as.Date(c('2012-05-01', '2012-11-01',
-                                  '2013-05-01', '2013-11-01')),
-               labels = c('Maio/2012', 'Nov/2012', 'Maio/2013', 'Nov/2013')) +
+  geom_vline(xintercept = as.Date('2013-10-07'),
+             col = 'darkred', alpha = 0.7) +
+  # scale_x_date(breaks = as.Date(c('2012-05-01', '2012-11-01',
+  #                                 '2013-05-01', '2013-11-01')),
+  #              labels = c('Maio/2012', 'Nov/2012', 'Maio/2013', 'Nov/2013')) +
   scale_y_continuous(labels = PregoesBR::formatar_numero) +
   labs(
     x = 'Data do Tratamento Placebo',
     y = 'Coeficiente estimado para o tratamento placebo',
     title = 'Efeito de Tratamento Placebo Anterior à Regra dos 3s',
-    subtitle = 'Amostra completa',
-    caption = 'Notas:
-    1) Resultados de modelos considerando datas alternativas para o tratamento placebo;
-    2) Total de 60 placebos, de 22/04/2012 a 03/12/2013, intervalados em 10 dias;
-    3) As áreas sombreadas representam intervalos de confiança de 95% (erros padrão HC1)'
+    subtitle = 'Amostra completa'
   )
 
 ggsave('brasil_placebo_3s_pre.png', width = 6, height = 5)
 
 # Plotting: dois painéis: Placebo + 3s ----------------------------------------
 # Finalizando organização do dataframe para construir o gráfico
-df_plot <- df_placebo_results %>%
+df_plot <- df_placebo %>%
+  select(-model_list) %>% 
   gather(key = 'treat_var',
          value = 'coefficient',
          treat1_est:treat_placebo_lower) %>%
@@ -123,9 +86,9 @@ ggplot(mapping = aes(x = data_placebo, group = grupo)) +
               fill = "gray", alpha = 0.5) +
   geom_hline(yintercept = 0) +
   facet_wrap(~ grupo, ncol = 2) +
-  scale_x_date(breaks = as.Date(c('2012-05-01', '2012-11-01',
-                                  '2013-05-01', '2013-11-01')),
-               labels = c('Maio/2012', 'Nov/2012', 'Maio/2013', 'Nov/2013')) +
+  # scale_x_date(breaks = as.Date(c('2012-05-01', '2012-11-01',
+  #                                 '2013-05-01', '2013-11-01')),
+  #              labels = c('Maio/2012', 'Nov/2012', 'Maio/2013', 'Nov/2013')) +
   scale_y_continuous(labels = PregoesBR::formatar_numero) +
   labs(
     x = 'Data do Tratamento Placebo',

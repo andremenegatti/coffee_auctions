@@ -77,6 +77,10 @@ ranking_lances <- df_lances %>%
 map_dbl(ranking_lances,
         .f = ~ slice(.x, 10) %>% select(share_acumulado) %>% unlist())
 
+# Numero de fornecedores distintos por regime
+map_dbl(ranking_lances,
+        .f = ~ distinct(.x, CNPJ_CPF) %>% nrow())
+
 # Total de lances por regime
 map_dbl(ranking_lances, .f = ~ sum(.x$n))
 

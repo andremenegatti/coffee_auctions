@@ -2,6 +2,10 @@ library(stargazer)
 library(tidyverse)
 library(lfe)
 
+source("dd/build_dd_df2.R")
+data_pub_3s <- as.Date('2013-10-07')
+
+
 # Abrindo bases ---------------------------------------------------------------
 # Principais
 bec_cafe <- readRDS('data/bec_cafe_dd.rds')
@@ -22,18 +26,18 @@ data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
                futuro_defl, arab_rob_defl, arab_defl, rob_defl,
                futuro_fitted, arab_rob_fitted, arab_fitted, rob_fitted,
                qualidade, qualidade2
-               ) %>%
+        ) %>%
         # Coercing to factor to avoid warnings when joining dataframes
         mutate_if(is.factor, as.character)
-      ) %>% 
+  ) %>% 
   # Dando nomes aos DFs
   set_names(c('bec', 'cnet', 'cnet_sp'))
 
 # Montando bases DD em uma lista ----------------------------------------------
 dd_data_list <- list(data_list$cnet, data_list$cnet_sp) %>%
   map(.f = ~ bind_rows(.x, data_list$bec) %>%
-        PregoesBR::build_dd_df()
-      ) %>% set_names(c('dd_brasil', 'dd_sp'))
+        build_dd_df2()
+  ) %>% set_names(c('dd_brasil', 'dd_sp'))
 
 # Salvando como .dta para checar no Stata -------------------------------------
 # dd_data_list$dd_sp %>%
@@ -42,7 +46,7 @@ dd_data_list <- list(data_list$cnet, data_list$cnet_sp) %>%
 #   haven::write_dta('sp_cafe_dd.dta')
 
 # DD SP -----------------------------------------------------------------------
-form <- 'log_win_bid ~ comprasnet + treat1 + treat2'
+form <- 'log_win_bid ~ comprasnet + treat1 + treat_ant + treat2'
 
 df_models_sp <- tibble(
   formula = 
@@ -80,12 +84,12 @@ df_models_brasil <- tibble(
 stargazer(df_models_brasil$models, type = 'text')
 
 # Robust Standard Errors ------------------------------------------------------
-lm_sp <- lm(log_win_bid ~ comprasnet + treat1 + treat2 + arab_defl + 
+lm_sp <- lm(log_win_bid ~ comprasnet + treat1 + treat_ant + treat2 + arab_defl + 
               kg_por_unid + qualidade + bimestre + municipio + 
               unidade_compradora + marca_vencedor_principais,
             data = dd_data_list$dd_sp)
 
-lm_brasil <- lm(log_win_bid ~ comprasnet + treat1 + treat2 + qualidade 
+lm_brasil <- lm(log_win_bid ~ comprasnet + treat1 + treat_ant + treat2 + qualidade 
                 + kg_por_unid + arab_defl + bimestre + sigla_uf:bimestre
                 + municipio + unidade_compradora,
                 data = dd_data_list$dd_brasil)
@@ -93,12 +97,26 @@ lm_brasil <- lm(log_win_bid ~ comprasnet + treat1 + treat2 + qualidade
 df_std_sp <- PregoesBR::get_robust_std_errors(lm_sp, HC = 'HC1')
 df_std <- PregoesBR::get_robust_std_errors(lm_brasil, HC = 'HC1')
 
+lm_sp_trends <- lm(log_win_bid ~ comprasnet + treat1 + treat_ant + treat2 + arab_defl + 
+              kg_por_unid + qualidade + bimestre + municipio + 
+              unidade_compradora + marca_vencedor_principais + comprasnet:trend_bimestre,
+            data = dd_data_list$dd_sp)
+
+lm_brasil_trends <- lm(log_win_bid ~ comprasnet + treat1 + treat_ant + treat2 + qualidade 
+                + kg_por_unid + arab_defl + bimestre + sigla_uf:bimestre
+                + municipio + unidade_compradora + comprasnet:trend_bimestre,
+                data = dd_data_list$dd_brasil)
+
+df_std_sp_trends <- PregoesBR::get_robust_std_errors(lm_sp_trends, HC = 'HC1')
+df_std_br_trends <- PregoesBR::get_robust_std_errors(lm_brasil_trends, HC = 'HC1')
+
+
 # Tendencias à la Chimeli-Soares: efeito do tratamento ao longo dos meses -----
 dd_treat_trends_sp <- 
   felm(log_win_bid ~ comprasnet + treat1 + treat2 + arab_defl + qualidade + 
          treat1_trend_bimestre + treat2_trend_bimestre | 
-       bimestre + unidade_compradora + municipio + marca_vencedor_principais,
-     data = dd_data_list$dd_sp) # <<<<
+         bimestre + unidade_compradora + municipio + marca_vencedor_principais,
+       data = dd_data_list$dd_sp) # <<<<
 
 dd_treat_trends_brasil <- 
   felm(log_win_bid ~ comprasnet + treat1 + treat2 + arab_defl + qualidade + 

@@ -8,7 +8,7 @@
 
 library(PregoesBR)
 
-df_bid_inc <- readRDS('Comprasnet/cnet_df_bid_inc.rds')
+df_bid_inc <- readRDS('data/cnet_bid_increments.rds')
 
 df_lances_completo <- df_bid_inc %>%
   # filter(regime_juridico == 'Sem intervalo minimo') %>%

@@ -1,0 +1,79 @@
+---
+title: "Notas de Pesquisa"
+author: "André Luís Menegatti"
+date: "2/19/2020"
+output: html_document
+---
+
+# Narrativa: uso de robôs
+* Quem dá mais lances tende a ganhar?
+* Checar como a mediana do intervalo entre lances dos fornecedores que mais dão lances evoluiu?
+* Comparar robôs destaques com os demais fornecedores em relação às seguintes distribuições:
+	+ Número de lances por pregão
+	+ Lances por minuto
+	+ Incremento?
+	+ Share no total de lances
+	+ Proporção de vitórias
+	
+* Checar evolução da razão preço global/total de lances
+  + Ao longo dos anos? A cada 4 meses?
+	
+* Mais uso de robôs em pregões em que o uso de robôs dá mais retorno:
+  + "While algorithms have low marginal costs, there may be substantial development costs, and it may be costly to optimize the algorithm's parameters for each security. The need to recover theses costs should lead to the adoption of AT at times and in securities where the returns to adoption are highest." (Hendershott, JOnes, Menkveld, 2011)
+
+# Argumento
+* O efeito estimado é o efeito médio no Comprasnet: o efeito nos leilões que usam robôs provavelmente foi maior
+
+# Dúvida
+* Manter apenas UASGs com leilões em todos os períodos?
+  + UASGs presentes em todos os anos?
+
+# DD
+* Specifically, DID designs assume that confounders varying across the groups are time invariant, and time-varying confounders are group invariant. (Wing, Simon, Bello-Gomez, 2018)
+
+* "[DD] is appropriate when the interventions are as good as random, conditional on time and group fixed effects.
+THerefore, much of the debate around the validity of a DD estimate typically revolves around the possible endogeneity
+of the interventions themselves." (Bertrand, Duflo, Mullainathan, 2004)
+
+* Checar autocorrelação dos resíduos?
+  + Regressão de Y contra UASG + Tempo
+  + Regressão do resíduo contra lags
+
+* Standard errors estimated under the assumption that errors are independent across observations are often biased downwards, which leads to over-rejection of the null hypothesis. (Wing, Simon, Bello-Gomez, 2018)
+* Hipóteses:
+  + Hipóteses usuais de qualquer regressão (Gauss-Markov)
+  + Tendências paralelas (pré-tratamento)
+  + Choques comuns (Angrist & Pischke, 2008)
+* Micro-level specification:
+
+> $P_{ijt} = \alpha + u_j + \sum_t \lambda_t + \beta_1 D_{20s} + \beta_2 D_{3s} + \theta m_j + \delta X_i + \phi W_t + \varepsilon_{ijt}$
+
+  + Alternativamente, poderíamos substituir efeitos-fixos de UASGs por variáveis com características das UASGs e adicionar *main effects* dos tratamentos.
+
+* Checar se outros eventos ou fatores podem ter afetado os grupos de forma diferente
+
+* Checar se não houve mudança na composição dos grupos ao longo do tratamento
+  + *e.g.*: aumento/diminuição das compras para presídios
+
+# Erros-padrão
+* Testar homoscedasticidade
+  + Breusch-Pagan, 1979
+  + Drukker, 2003
+* Usar *permutation tests*
+  + Ver paper Ernst 2004
+  + Citar recomendações de Abadie, Diamond & Hainmueller, 2010 e Bertrand, Duflo & Mullainathan, 2002
+* Experimentar clusterização
+
+# Parallel Trends
+* Group-specific trends
+  + "It should be noted, however, that by including state-specific trends, we run the risk of discarding potentially valid (i.e., exogenous) variation" (Hansen; Sabia; Rees, 2015)
+* Ryan, Burgess Jr, Dimick, 2015: incluir interação de comprasnet com dummies dos períodos pré-tratamento
+* Causalidade à la Granger
+* Justificar diferença de nível
+  + Mostrar que a diferença é histórica, logo não haveria um problema de regressão à média
+
+# Antecipação?
+* Publicação IN/SLTI n. 3/2013 em 7/10/2013
+* Violação à exogeneidade estrita (Wing; Simon & Bello-Gomez, 2018)
+
+
