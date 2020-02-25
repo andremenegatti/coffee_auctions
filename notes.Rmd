@@ -19,7 +19,7 @@ output: html_document
   + Ao longo dos anos? A cada 4 meses?
 	
 * Mais uso de robôs em pregões em que o uso de robôs dá mais retorno:
-  + "While algorithms have low marginal costs, there may be substantial development costs, and it may be costly to optimize the algorithm's parameters for each security. The need to recover theses costs should lead to the adoption of AT at times and in securities where the returns to adoption are highest." (Hendershott, JOnes, Menkveld, 2011)
+  + "While algorithms have low marginal costs, there may be substantial development costs, and it may be costly to optimize the algorithm's parameters for each security. The need to recover theses costs should lead to the adoption of AT at times and in securities where the returns to adoption are highest." (Hendershott, Jones, Menkveld, 2011)
 
 # Argumento
 * O efeito estimado é o efeito médio no Comprasnet: o efeito nos leilões que usam robôs provavelmente foi maior
