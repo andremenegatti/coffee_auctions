@@ -40,12 +40,13 @@ df_models <- tibble(
       str_c(form, ' + qualidade + kg_por_unid + arab_defl + comprasnet:trend_bimestre | bimestre + unidade_compradora + municipio + marca_vencedor_principais')))
 
 # Fitting DD models -----------------------------------------------------------
-for (i in seq(10, 69, by = 1)) {
+for (i in seq(10, 16, by = 1)) {
   
   message(i)
   
   top100_uasgs_list <- data_list %>% 
-    map(.f = ~ group_by(.x, unidade_compradora) %>% 
+    map(.f = ~ filter(.x, abertura_lances <= data_20s) %>% # <<<<
+          group_by(unidade_compradora) %>% 
           summarise(valor_negociado = sum(kg_fornecidos * win_bid_kg,
                                           na.rm = TRUE)) %>% 
           ungroup() %>% 
@@ -68,7 +69,7 @@ for (i in seq(10, 69, by = 1)) {
                                     data = dd_data_list$dd_sp))) # <<<<
   
   stargazer(df_fitted_models$models, type = 'text',
-            out = str_c('dd/top_uasgs/valor_negociado/sp/txt/top', i, '.txt'))
+            out = str_c('dd/top_uasgs/valor_negociado/sp_pre/txt/top', i, '.txt'))
   
   # HC1 SE
   lm_sp <- lm(log_win_bid ~ comprasnet + treat1 + treat2 + arab_defl + 
@@ -79,17 +80,17 @@ for (i in seq(10, 69, by = 1)) {
   df_std_sp <- PregoesBR::get_robust_std_errors(lm_sp, HC = 'HC1')
   
   saveRDS(df_std_sp,
-          str_c('dd/top_uasgs/valor_negociado/sp/hc1/top', i, '.rds'))
+          str_c('dd/top_uasgs/valor_negociado/sp_pre/hc1/top', i, '.rds'))
   
 }
 
 # Loading results -------------------------------------------------------------
 # Vector used to define which results to import
-top_seq <- seq(10, 69, by = 1)
+top_seq <- seq(10, 16, by = 1)
 
 # Loading dataframes with results
 rob_est_list <- map(.x = top_seq,
-                    .f = ~ str_c('dd/top_uasgs/valor_negociado/sp/hc1/top',
+                    .f = ~ str_c('dd/top_uasgs/valor_negociado/sp_pre/hc1/top',
                                  .x, '.rds') %>% 
                       readRDS()) %>% set_names(str_c('top', top_seq))
 
@@ -110,18 +111,18 @@ rob_est_df %>%
   scale_y_continuous(labels = PregoesBR::formatar_numero) +
   labs(x = 'Número de unidades compradoras selecionadas',
        y = 'Coeficiente estimado / coeficiente do modelo principal',
-       title = 'Efeito da Regra dos 3s nas principais unidades compradoras de SP',
-       subtitle = 'Maiores compradoras de café entre mar/2011 e dez/2015',
+       title = 'Efeito da Regra dos 3s nas principais unidades compradoras',
+       subtitle = 'Unidades compradoras de SP que mais realizaram leilões',
        caption = 'Notas:
        1) O eixo vertical representa a razão entre o coeficiente estimado 
            para os conjuntos das principais unidades compradoras 
            e o resultado da amostra completa de SP (0,122).
        2) As unidades compradoras de cada grupo (tratamento e controle) foram ordenadas 
-           segundo o montante negociado entre mar/2011 e dez/2015.
+           segundo o montante negociado entre 01/03/2011 e 17/01/2012.
            Para cada valor do eixo horizontal, rodou-se uma regressão considerando
            apenas os leilões das unidades compradoras com ranking igual ou superior.')
 
-# ggsave('plots/lineplot_efeito_3s_top_uasgs_valor.png', width = 7, height = 7)
+# ggsave('plots/lineplot_efeito_3s_top_uasgs.png', width = 6, height = 7)
 
 # Lineplot: efeito estimado Regra 3s, com CI -------------------------------------------
 rob_est_df %>% 
@@ -147,6 +148,6 @@ rob_est_df %>%
   scale_y_continuous(labels = PregoesBR::formatar_numero) +
   labs(x = 'Número de unidades compradoras selecionadas',
        y = 'Coeficiente estimado / coeficiente do modelo principal',
-       title = 'Efeito nas principais unidades compradoras',
-       subtitle = 'Unidades compradoras de SP que mais realizaram leilões') +
+       title = 'Efeito nas principais unidades compradoras de SP',
+       subtitle = 'Maiores compradoras de café entre 01/03/2011 e 17/01/2012') +
   facet_wrap(~ coef, nrow = 1)

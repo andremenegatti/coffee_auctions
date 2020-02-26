@@ -14,8 +14,7 @@ data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
         PregoesBR::trim_df('win_bid_kg', perc = 2.5) %>% # <<<<
         select(id_item, abertura_lances,
                inicio_ano, inicio_trimestre, inicio_bimestre, inicio_mes,
-               win_bid_kg, quantidade, kg_por_unid, 
-               kg_fornecidos, num_forn_lances,
+               win_bid_kg, quantidade, kg_por_unid, num_forn_lances,
                comprasnet, sigla_uf, municipio, unidade_compradora,
                unidade_compradora_lasso, marca_vencedor_principais,
                futuro_defl, arab_rob_defl, arab_defl, rob_defl,
@@ -40,20 +39,18 @@ df_models <- tibble(
       str_c(form, ' + qualidade + kg_por_unid + arab_defl + comprasnet:trend_bimestre | bimestre + unidade_compradora + municipio + marca_vencedor_principais')))
 
 # Fitting DD models -----------------------------------------------------------
-for (i in seq(10, 69, by = 1)) {
+for (i in seq(10, 16, by = 1)) {
   
   message(i)
   
   top100_uasgs_list <- data_list %>% 
-    map(.f = ~ group_by(.x, unidade_compradora) %>% 
-          summarise(valor_negociado = sum(kg_fornecidos * win_bid_kg,
-                                          na.rm = TRUE)) %>% 
-          ungroup() %>% 
-          arrange(desc(valor_negociado)) %>% 
+    map(.f = ~ filter(.x, abertura_lances < data_20s) %>% # <<<<
+          count(unidade_compradora) %>% 
+          arrange(desc(n)) %>% 
           slice(1:i) %>% 
           right_join(.x, by = 'unidade_compradora') %>% 
-          filter(!is.na(valor_negociado)) %>% 
-          select(-valor_negociado))
+          filter(!is.na(n)) %>% 
+          select(-n))
   
   # Montando bases DD em uma lista ----------------------------------------------
   dd_data_list <- list(top100_uasgs_list$cnet, top100_uasgs_list$cnet_sp) %>%
@@ -68,7 +65,7 @@ for (i in seq(10, 69, by = 1)) {
                                     data = dd_data_list$dd_sp))) # <<<<
   
   stargazer(df_fitted_models$models, type = 'text',
-            out = str_c('dd/top_uasgs/valor_negociado/sp/txt/top', i, '.txt'))
+            out = str_c('dd/top_uasgs/n_leiloes/sp_pre/txt/top', i, '.txt'))
   
   # HC1 SE
   lm_sp <- lm(log_win_bid ~ comprasnet + treat1 + treat2 + arab_defl + 
@@ -79,18 +76,17 @@ for (i in seq(10, 69, by = 1)) {
   df_std_sp <- PregoesBR::get_robust_std_errors(lm_sp, HC = 'HC1')
   
   saveRDS(df_std_sp,
-          str_c('dd/top_uasgs/valor_negociado/sp/hc1/top', i, '.rds'))
+          str_c('dd/top_uasgs/n_leiloes/sp_pre/hc1/top', i, '.rds'))
   
 }
 
 # Loading results -------------------------------------------------------------
 # Vector used to define which results to import
-top_seq <- seq(10, 69, by = 1)
+top_seq <- seq(10, 16, by = 1)
 
 # Loading dataframes with results
 rob_est_list <- map(.x = top_seq,
-                    .f = ~ str_c('dd/top_uasgs/valor_negociado/sp/hc1/top',
-                                 .x, '.rds') %>% 
+                    .f = ~ str_c('dd/top_uasgs/n_leiloes/sp_pre/hc1/top', .x, '.rds') %>% 
                       readRDS()) %>% set_names(str_c('top', top_seq))
 
 # Binding treatment effects into a single df, calculating CI
@@ -104,29 +100,27 @@ rob_est_df <- rob_est_list %>%
 # Lineplot: efeito relativo, apenas 3s ----------------------------------------
 rob_est_df %>% 
   filter(coef == 'treat2') %>% 
-  filter(no_uasgs < 41) %>%  # <<<<
   ggplot(aes(x = no_uasgs, y = estimate / 0.122)) +
   geom_line(color = 'black') +
   scale_y_continuous(labels = PregoesBR::formatar_numero) +
   labs(x = 'Número de unidades compradoras selecionadas',
        y = 'Coeficiente estimado / coeficiente do modelo principal',
        title = 'Efeito da Regra dos 3s nas principais unidades compradoras de SP',
-       subtitle = 'Maiores compradoras de café entre mar/2011 e dez/2015',
+       subtitle = 'Unidades compradoras que mais realizaram leilões entre 01/03/2011 e 17/01/2012',
        caption = 'Notas:
        1) O eixo vertical representa a razão entre o coeficiente estimado 
            para os conjuntos das principais unidades compradoras 
            e o resultado da amostra completa de SP (0,122).
        2) As unidades compradoras de cada grupo (tratamento e controle) foram ordenadas 
-           segundo o montante negociado entre mar/2011 e dez/2015.
+           segundo o número de leilões realizados entre 01/03/2011 e 17/01/2012.
            Para cada valor do eixo horizontal, rodou-se uma regressão considerando
            apenas os leilões das unidades compradoras com ranking igual ou superior.')
 
-# ggsave('plots/lineplot_efeito_3s_top_uasgs_valor.png', width = 7, height = 7)
+# ggsave('plots/lineplot_efeito_3s_top_uasgs.png', width = 6, height = 7)
 
 # Lineplot: efeito estimado Regra 3s, com CI -------------------------------------------
 rob_est_df %>% 
   filter(coef == 'treat2') %>% 
-  filter(no_uasgs < 41) %>% # <<<<
   ggplot(aes(x = no_uasgs, y = estimate)) +
   geom_line(color = 'black') +
   geom_ribbon(aes(ymin = ci_lower_bound, ymax = ci_upper_bound),

@@ -105,18 +105,18 @@ rob_est_df %>%
   scale_y_continuous(labels = PregoesBR::formatar_numero) +
   labs(x = 'Número de unidades compradoras selecionadas',
        y = 'Coeficiente estimado / coeficiente do modelo principal',
-       title = 'Efeito da Regra dos 3s nas principais unidades compradoras',
-       subtitle = 'Unidades compradoras de SP que mais realizaram leilões',
+       title = 'Efeito da Regra dos 3s nas principais unidades compradoras de SP',
+       subtitle = 'Unidades compradoras que mais realizaram leilões entre mar/2011 e dez/2015',
        caption = 'Notas:
        1) O eixo vertical representa a razão entre o coeficiente estimado 
            para os conjuntos das principais unidades compradoras 
            e o resultado da amostra completa de SP (0,122).
        2) As unidades compradoras de cada grupo (tratamento e controle) foram ordenadas 
-           segundo o número de leilões realizados entre mar./2011 e dez./2012.
+           segundo o número de leilões realizados entre mar/2011 e dez/2015.
            Para cada valor do eixo horizontal, rodou-se uma regressão considerando
            apenas os leilões das unidades compradoras com ranking igual ou superior.')
 
-# ggsave('plots/lineplot_efeito_3s_top_uasgs.png', width = 6, height = 7)
+# ggsave('plots/lineplot_efeito_3s_top_uasgs_n_leiloes.png', width = 7, height = 7)
 
 # Lineplot: efeito estimado Regra 3s, com CI -------------------------------------------
 rob_est_df %>% 
