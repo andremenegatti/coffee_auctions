@@ -1,12 +1,12 @@
 library(tidyverse)
 
-df_cnet_original <- readRDS('data/cnet_cafe_dd_v2.rds')
+df_cnet_original <- readRDS('data/cnet_cafe_dd.rds')
 
-df_lances_completo <- readRDS('comprasnet/cnet_df_lances_completo.rds')
+df_lances_completo <- readRDS('data/cnet_lances.rds')
 
 df_lances_nested <- df_lances_completo %>%
-  select(id_item, valor_lance:desconto_lance_proprio_bruto) %>%
-  nest(bid_data = valor_lance:desconto_lance_proprio_bruto)
+  select(id_item, data_hora, valor_lance:incremento_proprio_norm) %>%
+  nest(bid_data = data_hora:incremento_proprio_norm)
 
 df_cnet <- df_cnet_original %>%
   select(id_item, unidade_compradora, sigla_uf, municipio,
@@ -28,7 +28,6 @@ df_cnet <- df_cnet %>%
 
 df_cnet <- df_cnet %>%
   left_join(df_lances_nested, by = 'id_item')
-
 
 df_cnet2 <- df_cnet %>%
   filter(!map_lgl(bid_data, is.null)) %>%
@@ -56,7 +55,9 @@ df_cnet_ate2015 <- df_cnet2 %>%
 formatar_numero <- partial(formatC, digits = 2, decimal.mark = ',', big.mark = '.')
 
 # ECDF PLOT -------------------------------------------------------------------
-ecdf_plot <- ggplot(df_cnet_ate2015) +
+ecdf_plot <- df_cnet_ate2015 %>% 
+  mutate(regime_juridico = str_replace(regime_juridico, 'mini', 'míni')) %>% 
+  ggplot() +
   geom_line(aes(x =  int_ult_lance_fim, y = ecd,
                 col = regime_juridico, group = regime_juridico),
             size = 1, alpha = 0.7) +
@@ -65,7 +66,7 @@ ecdf_plot <- ggplot(df_cnet_ate2015) +
   scale_y_continuous(labels = formatar_numero) +
   coord_cartesian(xlim = c(0, 300)) +
   labs(
-    x = 'Segundos entre o último lance e o encerramento do pregão',
+    x = 'Segundos entre o último lance e o fim do pregão',
     y = 'Probabilidade acumulada',
     title = 'Efeitos das regras de intervalo mínimo sobre lances finais',
     subtitle = 'ECDF do tempo entre o último lance e o encerramento do pregão',
@@ -74,7 +75,8 @@ ecdf_plot <- ggplot(df_cnet_ate2015) +
   ) +
   theme(legend.text = element_text(size = 10))
 
-# ggsave(plot = ecdf_plot, filename = 'plots/ecdf_int_ult_lance_fim.png', width = 6.5, height = 7)
+# ggsave(plot = ecdf_plot, filename = 'plots/ecdf_int_ult_lance_fim.png',
+#        width = 6.5, height = 7)
 
 # DENSITY PLOT ----------------------------------------------------------------
 epdf_plot <- ggplot(df_cnet_ate2015) +
