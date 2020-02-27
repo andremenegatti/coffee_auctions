@@ -65,24 +65,24 @@ df_label <-
 
 # Gráfico ---------------------------------------------------------------------
 ggplot(df_plot) +
-  stat_smooth(aes(x = abertura_lances, y = num_forn_lances,
+  stat_smooth(aes(x = abertura_lances, y = log(win_bid_kg),
                   group = grupo, linetype = Plataforma),
               geom = 'smooth', color = 'black',
               method = "lm") +
   geom_vline(xintercept = c(data_20s, data_3s),
              linetype = 'dotted') +
   geom_label(data = df_label,
-             aes(x = abertura_lances, label = label), y = 10,
+             aes(x = abertura_lances, label = label), y = 2.95,
              size = 2.5, family = 'serif') +
   scale_x_date(breaks = as.Date(str_c(2011:2017, '-01-01')),
                labels = 2011:2017) +
   scale_y_continuous(labels = PregoesBR::formatar_numero) +
   labs(x = "Data do pregão",
-       y = "Número de participantes",
-       title = "Evolução do número de participantes nos pregões de café",
+       y = "Log. do melhor lance",
+       title = "Evolução dos preços nos pregões de café",
        subtitle = "Comparação entre BEC e Comprasnet") +
-  coord_cartesian(xlim = as.Date(c('2011-03-01', '2015-11-01'))) +
+  coord_cartesian(xlim = as.Date(c('2011-03-01', '2015-11-01')),
+                  ylim = c(2, 3)) +
   facet_wrap(~ amostra, nrow = 2)
 
-ggsave('plots/parallel_trends/parallel_trends_participantes.png',
-       height = 6, width = 6)
+ggsave('plots/parallel_trends/parallel_trends_log_win_bid.png', height = 5, width = 5)
