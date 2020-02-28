@@ -21,8 +21,8 @@ data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
                unidade_compradora_lasso, marca_vencedor_principais,
                futuro_defl, arab_rob_defl, arab_defl, rob_defl,
                futuro_fitted, arab_rob_fitted, arab_fitted, rob_fitted,
-               qualidade, qualidade2
-        ) %>%
+               qualidade, qualidade2, cnpj_fornecedor
+               ) %>%
         # Coercing to factor to avoid warnings when joining dataframes
         mutate_if(is.factor, as.character)
   ) %>% 

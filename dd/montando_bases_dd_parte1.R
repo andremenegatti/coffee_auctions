@@ -11,6 +11,19 @@ marcas <- readRDS('data/controles_marcas.rds') %>%
   select(id_item, marca_vencedor = marca_vencedor_clean_final,
          marca_vencedor_principais)
 
+# CNPJ vencedor (Comprasnet)
+cnpj_vencedores <- readRDS('data/controles_marcas.rds') %>% 
+  filter(!str_detect(id_item, 'OC')) %>% 
+  mutate(
+    cnpj_fornecedor = 
+      map2_chr(.x = propostas, .y = vencedor,
+               .f = ~ filter(.x, str_detect(fornecedor, .y)) %>% 
+                 slice(1) %>% 
+                 pull(CNPJ_CPF)  %>% 
+                 str_remove_all("\\.|/|-"))
+  ) %>% 
+  select(id_item, cnpj_fornecedor)
+
 # Qualidade
 qualidade <- readRDS('data/controles_qualidade.rds') %>%
   select(-descricao)
@@ -49,6 +62,7 @@ cnet_cafe <- readRDS('data/cnet_cafe.rds') %>%
   left_join(futuros_arab_rob, by = 'abertura_lances') %>%
   left_join(qualidade, by = 'id_item') %>%
   left_join(marcas, by = 'id_item') %>% 
+  left_join(cnpj_vencedores, by = 'id_item') %>% 
   left_join(selected_uasgs_list$cnet, by = 'id_item')
 
 # Filtrando SP
