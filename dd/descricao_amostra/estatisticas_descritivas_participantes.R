@@ -29,14 +29,18 @@ data_list <- list(bec, cnet, cnet_sp) %>%
   set_names(c('bec', 'cnet', 'cnet_sp'))
 
 # Summary statistics ----------------------------------------------------------
-data_list$bec %>%
+summary_table <- data_list$bec %>%
   mutate(Grupo = "Controle") %>%
   bind_rows(data_list$cnet %>% mutate(Grupo = "Tratamento")) %>%
   bind_rows(data_list$cnet_sp %>% mutate(Grupo = "Tratamento - SP")) %>%
+  filter(!is.na(num_forn_lances)) %>% # <<<<
   group_by(Grupo, regime_juridico) %>%
   summarise(N = n(),
             Média = mean(num_forn_lances, na.rm = TRUE),
             Mediana = median(num_forn_lances, na.rm = TRUE),
-            SD = sd(num_forn_lances, na.rm = TRUE)) %>%
+            SD = sd(num_forn_lances, na.rm = TRUE))
+
+
+summary_table %>%
   write.csv2('dd/descricao_amostra/tabela_descritiva_num_forn_lances.csv',
              row.names = FALSE)
