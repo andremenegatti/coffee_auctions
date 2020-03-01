@@ -1,10 +1,10 @@
 library(tidyverse)
 
 # Carregando base de dados
-dd_sp <- readRDS('data/dd_sp.rds')
+dd_brasil <- readRDS('data/dd_brasil.rds')
 
 # Attaching DF para simplificar o codigo
-attach(dd_sp)
+attach(dd_brasil)
 
 # Rodando Modelos Placebo -----------------------------------------------------
 df_placebo <-
@@ -28,27 +28,20 @@ df_placebo <-
     )
   )
 
+glimpse(df_placebo)
 
 for (i in 1:nrow(df_placebo)) {
   
-  message(str_c('Fitting model ', i, '/', nrow(df_placebo)))
-  
   model <- 
-    lm(log_win_bid ~ df_placebo$treat1[[i]] + df_placebo$treat2[[i]] +
-         df_placebo$treat_placebo[[i]] + qualidade + kg_por_unid + 
-         arab_defl + bimestre + unidade_compradora + 
-         municipio + marca_vencedor_principais)
+    lm(log_win_bid ~ df_placebo$treat1[[i]] + df_placebo$treat_placebo[[i]] +
+         df_placebo$treat2[[i]] + qualidade + kg_por_unid + futuro_defl + 
+         arab_defl + bimestre + sigla_uf:bimestre + municipio + unidade_compradora)
   
-  message('Estimating HC1 standard errors')
   robust_se <- PregoesBR::get_robust_std_errors(model)
   
-  filename <- str_c('dd/placebo/data/teste_sp/',
-                    as.character(df_placebo$data_placebo[[i]]),
-                    '.rds')
-  
-  message('Writing ', filename, '\n')
-  
-  saveRDS(robust_se, filename)
+  saveRDS(robust_se, str_c('dd/placebo/data/final_brasil/',
+                           as.character(df_placebo$data_placebo[[i]]),
+                           '.rds'))
   
   rm(model, robust_se)
   

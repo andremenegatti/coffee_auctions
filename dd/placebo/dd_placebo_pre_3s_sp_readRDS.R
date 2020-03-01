@@ -4,7 +4,7 @@ df_placebo <-
   tibble(data_placebo = seq(-420, -30, by = 3) + data_3s) %>% 
   mutate(model_list =
            map(.x = data_placebo,
-               .f = ~ str_c('dd/placebo/data/teste_sp/',
+               .f = ~ str_c('dd/placebo/data/final_sp/',
                             as.character(.x), '.rds') %>% readRDS()))
 
 df_placebo <- df_placebo %>% 
@@ -40,19 +40,25 @@ ggplot(df_placebo, aes(x = data_placebo, group = 1)) +
               fill = 'gray', alpha = 0.5) +
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = as.Date('2013-10-07'),
-             col = 'darkred', alpha = 0.7) +
-  # scale_x_date(breaks = as.Date(c('2012-05-01', '2012-11-01',
-  #                                 '2013-05-01', '2013-11-01')),
-  #              labels = c('Maio/2012', 'Nov/2012', 'Maio/2013', 'Nov/2013')) +
+             col = 'black', alpha = 0.7, linetype = 'dotted') +
+  geom_label(x = as.Date('2013-10-07'),
+             y = 0.75, label = '07/10/2013:\nPublicação da\nRegra dos 3s',
+             size = 3, family = 'serif', col = 'gray25') +
+  scale_x_date(breaks = as.Date(c('2012-12-01',
+                                  '2013-02-01', '2013-04-01',
+                                  '2013-06-01', '2013-08-01',
+                                  '2013-10-01', '2013-12-01')),
+               labels = c('Dez/12', 'Fev/13', 'Abr/13', 'Jun/13',
+                          'Ago/13', 'Out/13', 'Dez/13')) +
   scale_y_continuous(labels = PregoesBR::formatar_numero) +
   labs(
     x = 'Data do Tratamento Placebo',
-    y = 'Coeficiente estimado para o tratamento placebo',
+    y = 'Coeficiente do tratamento placebo',
     title = 'Efeito de Tratamento Placebo Anterior à Regra dos 3s',
-    subtitle = 'Amostra completa'
+    subtitle = 'Unidades compradoras de São Paulo'
   )
 
-ggsave('brasil_placebo_3s_pre.png', width = 6, height = 5)
+ggsave('placebo_3s_sp.png', width = 6, height = 5)
 
 # Plotting: dois painéis: Placebo + 3s ----------------------------------------
 # Finalizando organização do dataframe para construir o gráfico
