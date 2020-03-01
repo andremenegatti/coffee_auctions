@@ -1,10 +1,9 @@
-library(stargazer)
 library(tidyverse)
-library(lfe)
 
 # Abrindo bases ---------------------------------------------------------------
 # Principais
-bec_cafe <- readRDS('data/bec_cafe_dd.rds')
+bec_cafe <- readRDS('data/bec_cafe_dd.rds') %>% 
+  mutate(num_forn_aleat = num_forn_lances)
 cnet_cafe <- readRDS('data/cnet_cafe_dd.rds')
 cnet_cafe_sp <- readRDS('data/cnet_sp_cafe_dd.rds')
 
@@ -16,7 +15,8 @@ data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
         # Selecionando apenas variaveis relevantes
         select(id_item, abertura_lances,
                inicio_ano, inicio_trimestre, inicio_bimestre, inicio_mes,
-               win_bid_kg, quantidade, kg_por_unid, num_forn_lances,
+               win_bid_kg, quantidade, kg_por_unid,
+               num_forn_lances, num_forn_aleat,
                comprasnet, sigla_uf, municipio, unidade_compradora,
                unidade_compradora_lasso, marca_vencedor_principais,
                futuro_defl, arab_rob_defl, arab_defl, rob_defl,

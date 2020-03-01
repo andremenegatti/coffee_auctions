@@ -232,9 +232,13 @@ df_atas <- df_atas %>%
   mutate(avg_bids_per_bidder = map_dbl(.x = lances_clean,
                                        .f = ~ mean(table(.x["CNPJ_CPF"]))),
          median_bids_per_bidder = map_dbl(.x = lances_clean,
-                                       .f = ~ median(table(.x["CNPJ_CPF"]))),
+                                          .f = ~ median(table(.x["CNPJ_CPF"]))),
          num_forn_lances = map_int(.x = lances_clean,
                                    .f = calcular_numero_fornecedores),
+         num_forn_aleat = map2_int(.x = lances_clean,
+                                   .y = inicio_fase_aleatoria,
+                                   .f = ~ filter(.x, data_hora >= .y) %>% 
+                                     calcular_numero_fornecedores()),
          num_forn_propostas = map_int(.x = propostas,
                                       .f = calcular_numero_fornecedores))
 
