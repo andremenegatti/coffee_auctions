@@ -1,6 +1,6 @@
 library(tidyverse)
 
-results <- readRDS('results/main_results_sp.rds')
+results <- readRDS('results/n_bidders/main_results_brasil.rds')
 
 treat_var <- 'treat1'
 
@@ -8,7 +8,7 @@ treat_var <- 'treat1'
 map_dbl(.x = results$hc1_se,
         .f = ~ filter(.x, coef == treat_var) %>%
           pull(std_error)) %>% 
-  round(digits = 4)
+  round(digits = 3)
 
 # Significance
 map_chr(.x = results$hc1_se,
