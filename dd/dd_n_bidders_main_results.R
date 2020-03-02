@@ -7,7 +7,7 @@ dd_data_list <- c('data/dd_brasil.rds', 'data/dd_sp.rds') %>%
   map(.f = readRDS) %>% set_names(c('dd_brasil', 'dd_sp'))
 
 # DD SP -----------------------------------------------------------------------
-form <- 'log_win_bid ~ comprasnet + treat1 + treat2'
+form <- 'num_forn_lances ~ comprasnet + treat1 + treat2'
 
 df_models_sp <- tibble(
   formula = 
@@ -24,22 +24,22 @@ df_models_sp <- tibble(
 
 # Salvando tabelas de resultados
 stargazer(df_models_sp$felm_models, type = 'text',
-          out = 'results/log_win_bid/sp.txt')
+          out = 'results/n_bidders/sp.txt')
 
 stargazer(df_models_sp$felm_models,
-          out = 'results/log_win_bid/sp_latex.txt',
+          out = 'results/n_bidders/sp_latex.tex',
           decimal.mark = ',', digit.separator = '.')
 
 # HC1 SE
 df_models_sp <- df_models_sp %>% 
   mutate(hc1_se = map(.x = formula,
-                      .f = ~ str_replace(.x, '\\|', '+') %>% 
+                      .f = ~ str_replace(.x, '\\|', '+') %>%
                         lm(data = dd_data_list$dd_sp) %>% 
                         PregoesBR::get_robust_std_errors(HC = 'HC1') %>% 
                         head(n = 20)))
 
 # Salvando dados
-saveRDS(df_models_sp, 'results/log_win_bid/main_results/main_results_sp.rds')
+saveRDS(df_models_sp, 'results/n_bidders/main_results_sp.rds')
 
 # DD Brasil -------------------------------------------------------------------
 df_models_brasil <- tibble(
@@ -52,26 +52,25 @@ df_models_brasil <- tibble(
       str_c(form, ' + qualidade + kg_por_unid + futuro_defl | bimestre + sigla_uf:bimestre + municipio + unidade_compradora'),
       str_c(form, ' + qualidade + kg_por_unid + futuro_defl + arab_defl | bimestre + sigla_uf:bimestre + municipio + unidade_compradora')),
   felm_models = map(.x = formula,
-               .f = ~ felm(as.formula(.x),
-                           data = dd_data_list$dd_brasil))) # <<<<
+                    .f = ~ felm(as.formula(.x),
+                                data = dd_data_list$dd_brasil))) # <<<<
 
 # Salvando tabelas de resultados
 stargazer(df_models_brasil$felm_models, type = 'text',
-          out = 'results/log_win_bid/brasil.txt')
+          out = 'results/n_bidders/brasil.txt')
 
 stargazer(df_models_brasil$felm_models,
-          out = 'results/log_win_bid/brasil_latex.txt',
+          out = 'results/n_bidders/brasil_latex.tex',
           decimal.mark = ',', digit.separator = '.')
 
 # HC1 SE
 df_models_brasil <- df_models_brasil %>% 
   mutate(hc1_se = map(.x = formula,
-                         .f = ~ str_replace(.x, '\\|', '+') %>% 
-                           lm(data = dd_data_list$dd_brasil) %>% 
+                      .f = ~ str_replace(.x, '\\|', '+') %>% 
+                        lm(data = dd_data_list$dd_brasil) %>% 
                         PregoesBR::get_robust_std_errors(HC = 'HC1') %>% 
                         head(n = 20))
   )
 
 # Salvando dados
-saveRDS(df_models_brasil,
-        'results/log_win_bid/main_results/main_results_brasil.rds')
+saveRDS(df_models_brasil, 'results/n_bidders/main_results_brasil.rds')

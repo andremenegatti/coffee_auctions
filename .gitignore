@@ -6,6 +6,7 @@ old/*
 plots/trelliscope/*
 plots/bot_search/*.html
 comprasnet/bot_search/old/
+results/n_bidders_random/
 
 # History files
 .Rhistory
