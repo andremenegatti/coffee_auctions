@@ -1,18 +1,18 @@
 library(tidyverse)
 
 # Abrindo bases ---------------------------------------------------------------
-# Principais
 bec_cafe <- readRDS('data/bec_cafe_dd.rds') %>% 
-  mutate(num_forn_aleat = num_forn_lances)
-cnet_cafe <- readRDS('data/cnet_cafe_dd.rds')
+  mutate(num_forn_aleat = num_forn_lances) %>% 
+  filter(win_bid_kg < 80) # Removendo 2 observações (possíveis erros)
+
+cnet_cafe <- readRDS('data/cnet_cafe_dd.rds') %>% 
+  PregoesBR::trim_df('win_bid_kg', 1.5)
+
 cnet_cafe_sp <- readRDS('data/cnet_sp_cafe_dd.rds')
 
 # Data wrangling --------------------------------------------------------------
 data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
   map(.f = ~ .x %>%
-        # Removendo outliers: 2.5% de cada lado # <<<<
-        PregoesBR::trim_df('win_bid_kg', perc = 2.5) %>%
-        # Selecionando apenas variaveis relevantes
         select(id_item, abertura_lances,
                inicio_ano, inicio_trimestre, inicio_bimestre, inicio_mes,
                win_bid_kg, quantidade, kg_por_unid,
@@ -22,12 +22,10 @@ data_list <- list(bec_cafe, cnet_cafe, cnet_cafe_sp) %>%
                futuro_defl, arab_rob_defl, arab_defl, rob_defl,
                futuro_fitted, arab_rob_fitted, arab_fitted, rob_fitted,
                qualidade, qualidade2, cnpj_fornecedor
-               ) %>%
+        ) %>%
         # Coercing to factor to avoid warnings when joining dataframes
         mutate_if(is.factor, as.character)
-  ) %>% 
-  # Dando nomes aos DFs
-  set_names(c('bec', 'cnet', 'cnet_sp'))
+  ) %>% set_names(c('bec', 'cnet', 'cnet_sp'))
 
 # Montando bases DD em uma lista ----------------------------------------------
 dd_data_list <- list(data_list$cnet, data_list$cnet_sp) %>%
