@@ -48,7 +48,7 @@ bec_cafe <- bec_cafe %>%
 # Correção: limite de preços --------------------------------------------------
 bec_cafe <- bec_cafe %>%
   mutate(win_bid_kg = corrigir_erro_de_medida(melhor_lance_bruto_defl,
-                                              corte = 40,
+                                              corte = 80,
                                               quantidade))
 
 # Removendo observacoes duplicadas --------------------------------------------

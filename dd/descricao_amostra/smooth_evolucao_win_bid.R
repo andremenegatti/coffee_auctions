@@ -6,7 +6,8 @@ bec <- readRDS('data/bec_cafe.rds') %>%
   mutate(abertura_lances = as.Date(dt_inicio), Plataforma = 'BEC') %>%
   select(id_item, abertura_lances, win_bid_kg, num_forn_lances,
          Plataforma, kg_fornecidos) %>% 
-  filter(abertura_lances > '2011-01-01', abertura_lances < '2016-02-01')
+  filter(abertura_lances > '2011-01-01', abertura_lances < '2016-02-01') %>% 
+  filter(win_bid_kg < 80)
 
 cnet <- readRDS('data/cnet_cafe.rds') %>% 
   mutate(abertura_lances = as.Date(abertura_lances)) %>% 
@@ -15,6 +16,8 @@ cnet <- readRDS('data/cnet_cafe.rds') %>%
   filter(abertura_lances > '2011-01-01', abertura_lances < '2016-02-01')
 
 cnet_sp <- filter(cnet, sigla_uf == 'SP')
+
+cnet <- PregoesBR::trim_df(cnet, 'win_bid_kg', perc = 1.5)
 
 # Preparando dados ------------------------------------------------------------
 plot_list <- map(

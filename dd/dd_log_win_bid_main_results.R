@@ -39,7 +39,7 @@ df_models_sp <- df_models_sp %>%
                         head(n = 20)))
 
 # Salvando dados
-saveRDS(df_models_sp, 'results/log_win_bid/main_results/main_results_sp.rds')
+saveRDS(df_models_sp, 'results/log_win_bid/main_results_sp.rds')
 
 # DD Brasil -------------------------------------------------------------------
 df_models_brasil <- tibble(
@@ -74,4 +74,4 @@ df_models_brasil <- df_models_brasil %>%
 
 # Salvando dados
 saveRDS(df_models_brasil,
-        'results/log_win_bid/main_results/main_results_brasil.rds')
+        'results/log_win_bid/main_results_brasil.rds')

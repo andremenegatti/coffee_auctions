@@ -54,6 +54,8 @@ of the interventions themselves." (Bertrand, Duflo, Mullainathan, 2004)
 * Checar se não houve mudança na composição dos grupos ao longo do tratamento
   + *e.g.*: aumento/diminuição das compras para presídios
 
+# Controle adicional
+* BEC X Meses com grande número de leilões
 
 # Erros-padrão
 * Testar homoscedasticidade
