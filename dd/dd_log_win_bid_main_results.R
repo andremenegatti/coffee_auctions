@@ -4,7 +4,8 @@ library(lfe)
 
 # Abrindo bases ---------------------------------------------------------------
 dd_data_list <- c('data/dd_brasil.rds', 'data/dd_sp.rds') %>% 
-  map(.f = readRDS) %>% set_names(c('dd_brasil', 'dd_sp'))
+  map(.f = ~ readRDS(.x) %>% filter(!is.na(num_forn_lances))) %>%
+  set_names(c('dd_brasil', 'dd_sp'))
 
 # DD SP -----------------------------------------------------------------------
 form <- 'log_win_bid ~ comprasnet + treat1 + treat2'
