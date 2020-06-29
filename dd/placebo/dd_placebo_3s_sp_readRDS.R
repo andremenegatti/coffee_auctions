@@ -107,4 +107,4 @@ ggplot(mapping = aes(x = data_placebo, group = grupo)) +
     3) As áreas sombreadas representam intervalos de confiança de 95% (erros padrão HC1)'
   )
 
-ggsave('brasil_placebo_3s_pre_2paineis.png', width = 9, height = 6)
+ggsave('sp_placebo_3s_pre_2paineis.png', width = 9, height = 6)

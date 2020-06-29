@@ -28,7 +28,7 @@ stargazer(df_models_sp$felm_models, type = 'text',
           out = 'results/log_win_bid/sp.txt')
 
 stargazer(df_models_sp$felm_models,
-          out = 'results/log_win_bid/sp_latex.txt',
+          out = 'results/log_win_bid/sp_latex.tex',
           decimal.mark = ',', digit.separator = '.')
 
 # HC1 SE
@@ -40,7 +40,8 @@ df_models_sp <- df_models_sp %>%
                         head(n = 20)))
 
 # Salvando dados
-saveRDS(df_models_sp, 'results/log_win_bid/main_results_sp.rds')
+df_models_sp %>% 
+  saveRDS('results/log_win_bid/main_results_sp.rds')
 
 # DD Brasil -------------------------------------------------------------------
 df_models_brasil <- tibble(
@@ -61,7 +62,7 @@ stargazer(df_models_brasil$felm_models, type = 'text',
           out = 'results/log_win_bid/brasil.txt')
 
 stargazer(df_models_brasil$felm_models,
-          out = 'results/log_win_bid/brasil_latex.txt',
+          out = 'results/log_win_bid/brasil_latex.tex',
           decimal.mark = ',', digit.separator = '.')
 
 # HC1 SE
@@ -74,5 +75,5 @@ df_models_brasil <- df_models_brasil %>%
   )
 
 # Salvando dados
-saveRDS(df_models_brasil,
-        'results/log_win_bid/main_results_brasil.rds')
+df_models_brasil %>% 
+  saveRDS('results/log_win_bid/main_results_brasil.rds')

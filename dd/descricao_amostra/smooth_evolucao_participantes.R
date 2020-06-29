@@ -49,7 +49,7 @@ df_plot <- bind_rows(
   )
 
 # Não-ponderado ---------------------------------------------------------------
-df_plot %>% 
+p1 <- df_plot %>% 
   ggplot() +
   stat_smooth(aes(x = abertura_lances, y = num_forn_lances,
                   linetype = Plataforma),
@@ -68,10 +68,20 @@ df_plot %>%
        y = "Número de participantes",
        title = "Evolução do número de participantes",
        subtitle = "Comparação entre BEC e Comprasnet") +
-  facet_wrap(~ amostra, nrow = 2)
+  facet_wrap(~ amostra, nrow = 2) +
+  theme(legend.position = 'bottom')
 
-ggsave('plots/descricao_amostra/smooth_evolucao_participantes.png',
-       width = 6, height = 6)
+ggsave(plot = p1, width = 5, height = 6,
+       filename = 'plots/descricao_amostra/smooth_evolucao_participantes.png')
+
+# Salvando versao sem título para a dissertação
+p2 <- p1 +
+  theme(plot.title = element_blank(),
+        plot.subtitle = element_blank())
+
+ggsave(plot = p2, width = 5, height = 6,
+       filename = 
+         '~/Documents/dissertacao/images/smooth_evolucao_participantes.png')
 
 # Ponderado -------------------------------------------------------------------
 df_plot %>% 

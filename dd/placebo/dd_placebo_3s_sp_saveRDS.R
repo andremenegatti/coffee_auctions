@@ -1,7 +1,8 @@
 library(tidyverse)
 
 # Carregando base de dados
-dd_sp <- readRDS('data/dd_sp.rds')
+dd_sp <- readRDS('data/dd_sp.rds') %>% 
+  filter(!is.na(num_forn_lances))
 
 # Attaching DF para simplificar o codigo
 attach(dd_sp)

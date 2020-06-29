@@ -4,7 +4,7 @@ library(lfe)
 
 # Abrindo bases ---------------------------------------------------------------
 dd_data_list <- c('data/dd_brasil.rds', 'data/dd_sp.rds') %>% 
-  map(.f = readRDS) %>% 
+  map(.f = ~ readRDS(.x) %>% filter(!is.na(num_forn_lances))) %>%
   set_names(c('dd_brasil', 'dd_sp'))
 
 # Estimating DD with group-specific linear trends -----------------------------
@@ -23,10 +23,10 @@ trends_brasil <-
 # Salvando tabelas de resultados
 stargazer(trends_brasil, trends_sp,
           type = 'text',
-          out = 'results/n_bidders/group_trends/trends.txt')
+          out = 'results/group_trends/trends_n_bidders.txt')
 
 stargazer(trends_brasil, trends_sp,
-          out = 'results/n_bidders/group_trends/trends_latex.tex',
+          out = 'results/group_trends/trends_n_bidders.tex',
           decimal.mark = ',', digit.separator = '.')
 
 # HC1 SE ----------------------------------------------------------------------
@@ -59,4 +59,4 @@ trends_brasil_hc1 <-
 # Salvando dados --------------------------------------------------------------
 list('trends_sp_hc1' = trends_sp_hc1,
      'trends_brasil_hc1' = trends_brasil_hc1) %>% 
-  saveRDS('results/n_bidders/group_trends/trends_hc1_results.rds')
+  saveRDS('results/group_trends/trends_n_bidders_hc1_results.rds')

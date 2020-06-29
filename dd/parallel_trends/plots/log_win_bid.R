@@ -52,7 +52,8 @@ ggplot(df_plot) +
        subtitle = "Comparação entre BEC e Comprasnet") +
   coord_cartesian(xlim = as.Date(c('2011-03-01', '2015-11-01')),
                   ylim = c(2, 3)) +
-  facet_wrap(~ amostra, nrow = 2)
+  facet_wrap(~ amostra, nrow = 2) +
+  theme(legend.position = 'bottom')
 
 ggsave('plots/parallel_trends/parallel_trends_log_win_bid.png',
-       height = 6, width = 6)
+       height = 6, width = 5)

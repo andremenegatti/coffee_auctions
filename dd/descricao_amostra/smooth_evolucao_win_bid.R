@@ -49,7 +49,7 @@ df_plot <- bind_rows(
   )
 
 # Não-ponderado ---------------------------------------------------------------
-df_plot %>% 
+p1 <- df_plot %>% 
   ggplot() +
   stat_smooth(aes(x = abertura_lances, y = win_bid_kg,
                   linetype = Plataforma),
@@ -69,10 +69,19 @@ df_plot %>%
        y = "Melhor lance (R$/kg)",
        title = "Evolução dos preços nos pregões de café",
        subtitle = "Comparação entre BEC e Comprasnet") +
-  facet_wrap(~ amostra, nrow = 2)
+  facet_wrap(~ amostra, nrow = 2) +
+  theme(legend.position = 'bottom')
 
-ggsave('plots/descricao_amostra/smooth_evolucao_win_bid.png',
-       width = 6, height = 6)
+ggsave(p1, 'plots/descricao_amostra/smooth_evolucao_win_bid.png',
+       width = 5, height = 6)
+
+# Salvando versao sem título para a dissertação
+p2 <- p1 +
+  theme(plot.title = element_blank(),
+        plot.subtitle = element_blank())
+
+ggsave(plot = p2, width = 5, height = 6,
+       filename = '~/Documents/dissertacao/images/smooth_evolucao_win_bid.png')
 
 # Ponderado -------------------------------------------------------------------
 df_plot %>% 

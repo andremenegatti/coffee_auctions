@@ -52,17 +52,19 @@ df_cnet_ate2015 <- df_cnet2 %>%
   map(.f = ~ mutate(.x, ecd = ecdf(int_ult_lance_fim)(int_ult_lance_fim))) %>%
   bind_rows()
 
-formatar_numero <- partial(formatC, digits = 2, decimal.mark = ',', big.mark = '.')
+formatar_numero <- partial(formatC, digits = 2,
+                           decimal.mark = ',', big.mark = '.')
 
 # ECDF PLOT -------------------------------------------------------------------
 ecdf_plot <- df_cnet_ate2015 %>% 
-  mutate(regime_juridico = str_replace(regime_juridico, 'mini', 'míni')) %>% 
+  mutate(regime_juridico = str_replace(regime_juridico, 'mini', 'míni') %>% 
+           fct_relevel('Sem intervalo mínimo', 'Regra 20s', 'Regra 20s + Regra 3s')) %>% 
   ggplot() +
   geom_line(aes(x =  int_ult_lance_fim, y = ecd,
-                col = regime_juridico, group = regime_juridico),
+                linetype = regime_juridico, group = regime_juridico),
             size = 1, alpha = 0.7) +
-  scale_color_manual(name = 'Regime Jurídico',
-                     values = c('black', 'blue', 'red')) +
+  scale_linetype_manual(name = 'Regime Jurídico',
+                     values = c('solid', 'dashed', 'dotted')) +
   scale_y_continuous(labels = formatar_numero) +
   coord_cartesian(xlim = c(0, 300)) +
   labs(
@@ -73,10 +75,22 @@ ecdf_plot <- df_cnet_ate2015 %>%
     caption = '
     Nota: Para melhor visualização, o eixo horizontal é limitado a 5 minutos.'
   ) +
-  theme(legend.text = element_text(size = 10))
+  theme(legend.text = element_text(size = 10)) ; ecdf_plot
 
-# ggsave(plot = ecdf_plot, filename = 'plots/ecdf_int_ult_lance_fim.png',
-#        width = 6.5, height = 7)
+ggsave(plot = ecdf_plot,
+       filename = '~/Documents/dissertacao/images/ecdf_int_ult_lance_fim.png',
+       width = 6.5, height = 7)
+
+
+# Checking specific values
+ecdfs = df_cnet2 %>%
+  filter(abertura_lances < '2016-01-01') %>%
+  split(f = .$regime_juridico) %>% 
+  map(.f = ~ ecdf(.x$int_ult_lance_fim))
+
+ecdfs$`Sem intervalo minimo`(75)
+ecdfs$`Regra 20s`(90)
+ecdfs$`Regra 20s + Regra 3s`(110)
 
 # DENSITY PLOT ----------------------------------------------------------------
 epdf_plot <- ggplot(df_cnet_ate2015) +

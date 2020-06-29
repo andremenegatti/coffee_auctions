@@ -39,7 +39,8 @@ df_models_sp <- df_models_sp %>%
                         head(n = 20)))
 
 # Salvando dados
-saveRDS(df_models_sp, 'results/n_bidders/main_results_sp.rds')
+df_models_sp %>% 
+  saveRDS('results/n_bidders/main_results_sp.rds')
 
 # DD Brasil -------------------------------------------------------------------
 df_models_brasil <- tibble(

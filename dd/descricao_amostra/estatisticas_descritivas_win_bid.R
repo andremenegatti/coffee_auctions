@@ -19,6 +19,7 @@ summary_table <- bec %>%
   mutate(Grupo = "Controle") %>%
   bind_rows(cnet %>% mutate(Grupo = "Tratamento")) %>%
   bind_rows(cnet_sp %>% mutate(Grupo = "Tratamento - SP")) %>%
+  filter(!is.na(num_forn_lances)) %>% # <<<<
   group_by(Grupo, regime_juridico) %>%
   summarise(N = n(),
             Média = mean(win_bid_kg, na.rm = TRUE),
