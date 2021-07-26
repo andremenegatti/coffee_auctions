@@ -8,6 +8,7 @@ df_placebo <-
                .f = ~ str_c('dd/placebo/data/final_brasil/',
                             as.character(.x), '.rds') %>% readRDS()))
 
+
 # Extraindo coeficientes e erros-padrão ---------------------------------------
 df_placebo <- df_placebo %>% 
   mutate(treat1_est = map_dbl(.x = model_list,
@@ -97,13 +98,9 @@ ggplot(mapping = aes(x = data_placebo, group = grupo)) +
   scale_y_continuous(labels = PregoesBR::formatar_numero) +
   labs(
     x = 'Data do Tratamento Placebo',
-    y = 'Coeficiente estimado',
-    title = 'Teste Placebo - Efeito da Regra dos 3s - Amostra completa',
-    subtitle = 'Introdução de um tratamento placebo anterior à regra dos 3s',
-    caption = 'Notas:
-    1) Resultados de modelos considerando datas alternativas para o tratamento placebo;
-    2) Total de 60 placebos, de 22/04/2012 a 03/12/2013, intervalados em 10 dias;
-    3) As áreas sombreadas representam intervalos de confiança de 95% (erros padrão HC1)'
+    y = 'Coeficiente estimado'
+    # title = 'Teste Placebo - Efeito da Regra dos 3s - Amostra completa',
+    # subtitle = 'Introdução de um tratamento placebo anterior à regra dos 3s'
   )
 
-ggsave('brasil_placebo_3s_pre_2paineis.png', width = 9, height = 6)
+ggsave('plots/brasil_placebo_3s_pre_2paineis.png', width = 9, height = 6)

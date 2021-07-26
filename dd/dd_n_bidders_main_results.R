@@ -15,7 +15,6 @@ df_models_sp <- tibble(
       str_c(form, ' | bimestre + unidade_compradora + municipio'),
       str_c(form, ' | bimestre + unidade_compradora + municipio + marca_vencedor_principais'),
       str_c(form, ' + qualidade + kg_por_unid               | bimestre + unidade_compradora + municipio + marca_vencedor_principais'),
-      str_c(form, ' + qualidade + kg_por_unid + arab_defl | bimestre + unidade_compradora + municipio + marca_vencedor_principais'),
       str_c(form, ' + qualidade + kg_por_unid + futuro_defl | bimestre + unidade_compradora + municipio + marca_vencedor_principais'),
       str_c(form, ' + qualidade + kg_por_unid + futuro_defl + arab_defl | bimestre + unidade_compradora + municipio + marca_vencedor_principais')
     ),
@@ -32,11 +31,14 @@ stargazer(df_models_sp$felm_models,
 
 # HC1 SE
 df_models_sp <- df_models_sp %>% 
-  mutate(hc1_se = map(.x = formula,
-                      .f = ~ str_replace(.x, '\\|', '+') %>%
-                        lm(data = dd_data_list$dd_sp) %>% 
-                        PregoesBR::get_robust_std_errors(HC = 'HC1') %>% 
-                        head(n = 20)))
+  mutate(hc1_se = map(
+    .x = formula,
+    .f = ~ str_replace(.x, '\\|', '+') %>% 
+      lm(data = dd_data_list$dd_sp) %>% 
+      PregoesBR::get_robust_std_errors(HC = 'HC1') %>% 
+      filter(str_detect(coef,
+                        '^comprasnet|Intercept|treat1|treat2|qualidade|kg_por_unid|futuro_defl|arab_defl'))
+  ))
 
 # Salvando dados
 df_models_sp %>% 
@@ -49,7 +51,6 @@ df_models_brasil <- tibble(
       str_c(form, ' | bimestre + sigla_uf:bimestre + municipio'),
       str_c(form, ' | bimestre + sigla_uf:bimestre + municipio + unidade_compradora'),
       str_c(form, ' + qualidade + kg_por_unid               | bimestre + sigla_uf:bimestre + municipio + unidade_compradora'),
-      str_c(form, ' + qualidade + kg_por_unid + arab_defl   | bimestre + sigla_uf:bimestre + municipio + unidade_compradora'),
       str_c(form, ' + qualidade + kg_por_unid + futuro_defl | bimestre + sigla_uf:bimestre + municipio + unidade_compradora'),
       str_c(form, ' + qualidade + kg_por_unid + futuro_defl + arab_defl | bimestre + sigla_uf:bimestre + municipio + unidade_compradora')),
   felm_models = map(.x = formula,
@@ -66,12 +67,14 @@ stargazer(df_models_brasil$felm_models,
 
 # HC1 SE
 df_models_brasil <- df_models_brasil %>% 
-  mutate(hc1_se = map(.x = formula,
-                      .f = ~ str_replace(.x, '\\|', '+') %>% 
-                        lm(data = dd_data_list$dd_brasil) %>% 
-                        PregoesBR::get_robust_std_errors(HC = 'HC1') %>% 
-                        head(n = 20))
-  )
+  mutate(hc1_se = map(
+    .x = formula,
+    .f = ~ str_replace(.x, '\\|', '+') %>% 
+      lm(data = dd_data_list$dd_brasil) %>% 
+      PregoesBR::get_robust_std_errors(HC = 'HC1') %>% 
+      filter(str_detect(coef,
+                        '^comprasnet|Intercept|treat1|treat2|qualidade|kg_por_unid|futuro_defl|arab_defl'))
+  ))
 
 # Salvando dados
 saveRDS(df_models_brasil, 'results/n_bidders/main_results_brasil.rds')

@@ -32,7 +32,7 @@ output: html_document
 * Specifically, DID designs assume that confounders varying across the groups are time invariant, and time-varying confounders are group invariant. (Wing, Simon, Bello-Gomez, 2018)
 
 * "[DD] is appropriate when the interventions are as good as random, conditional on time and group fixed effects.
-THerefore, much of the debate around the validity of a DD estimate typically revolves around the possible endogeneity
+Therefore, much of the debate around the validity of a DD estimate typically revolves around the possible endogeneity
 of the interventions themselves." (Bertrand, Duflo, Mullainathan, 2004)
 
 * Checar autocorrelação dos resíduos?

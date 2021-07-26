@@ -1,0 +1,76 @@
+\setlength{\tabcolsep}{2pt}
+\small
+\begin{table}[!htbp]
+\centering
+\begin{threeparttable}
+  \centering
+  \caption{Efeitos das regras de intervalo mínimo sobre o preço final - Resultados detalhados do modelo de diferenças em diferenças - Compradores de todo o Brasil}
+  \label{dd_results_win_bid_br_complete} 
+\begin{tabular}{lcccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+\\[-1.8ex] & (1) & (2) & (3) & (4) & (5) & (6)\\ 
+\hline \\[-1.8ex]
+
+Comprasnet & 0,449$^{***}$ & 0,157$^{***}$ &  &  &  & \\ 
+  & (0,013) & (0,053) &  &  &  &  \\ 
+  & & & & & & \\ 
+
+ Regra20s & 0,058$^{***}$ & $-$0,052 & 0,043 & 0,047 & 0,048 & 0,053 \\ 
+  & (0,014) & (0,051) & (0,053) & (0,053) & (0,053) & (0,053) \\ 
+  & & & & & &  \\ 
+ Regra20s + Regra3s & $-$0,077$^{***}$ & $-$0,028 & 0,150$^{**}$ & 0,148$^{**}$ & 0,149$^{**}$ & 0,153$^{**}$ \\ 
+  & (0,014) & (0,062) & (0,066) & (0,065) & (0,065) & (0,065) \\ 
+  & & & & & & \\ 
+
+qualidade\_descafeinado &  &  &  & 0,868$^{***}$ & 0,868$^{***}$ & 0,870$^{***}$ \\ 
+  &  &  &  & (0,092) & (0,092) & (0,092) \\ 
+  & & & & & & \\ 
+
+qualidade\_gourmet &  &  &  & 0,171$^{***}$ & 0,171$^{***}$ & 0,171$^{***}$ \\ 
+  &  &  &  & (0,026) & (0,026) & (0,026) \\ 
+  & & & & & & \\ 
+
+qualidade\_superior  &  &  &  & 0,034 & 0,034& 0,034 \\ 
+  &  &  &  & (0,024) & (0,024) &(0,024) \\ 
+  & & & & & & \\ 
+
+embalagem\_250g &  &  &  & 0,168$^{***}$ & 0,168$^{***}$ & 0,168$^{***}$ \\ 
+  &  &  &  & (0,028) & (0,028) & (0,028) \\ 
+  & & & & & & \\ 
+
+embalagem\_1kg &  &  &  & $-$0,045$^{**}$ & $-$0,044$^{**}$ & $-$0,045$^{**}$ \\
+  &  &  &  & (0,019) & (0,019) & (0,019) \\ 
+  & & & & & & \\ 
+
+embalagem\_5kg &  &  &  & 0,008 & 0,008 & 0,008 \\ 
+  &  &  &  & (0,086) & (0,086) & (0,086) \\ 
+  & & & & & & \\ 
+
+preco\_futuro\_cafe &  &  &  &  & $-$0,0001 & $-$0,0002 \\ 
+  &  &  &  &  & (0,0002) & (0,0002) \\ 
+  & & & & & & \\
+
+preco\_saca\_arabica  &  &  &  &  & & 0,0004$^{*}$ \\ 
+  &  &  &  &  & & (0,0002) \\ 
+  & & & & & & \\ 
+
+
+ EF UF x Bimestre  &  & X & X & X & X & X \\ 
+ EF município  &  & X & X & X & X & X \\ 
+ EF unidade compradora  &  &  & X & X & X & X \\ 
+\hline \\[-1.8ex] 
+
+Observações & 4.894 & 4.894 & 4.894 & 4.894 & 4.894 & 4.894 \\ 
+R$^{2}$ Ajustado & 0,378 & 0,550 & 0,689 & 0,712 & 0,713 & 0,713 \\ 
+R$^{2}$ & 0,379 & 0,647 & 0,841 & 0,853 & 0,853 & 0,853 \\ 
+\hline 
+
+\hline \\[-1.8ex] 
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\emph{Notas:} (i) em todas as especificações a variável dependente é o logaritmo do preço final do leilão, em reais de dezembro de 2015 por quilograma de café; (ii) erros-padrão robustos a heterocedasticidade HC1 indicados entre parênteses; (iii) níveis de significância destacados por asteriscos, sendo  $^{*}$p$<$0,1, $^{**}$p$<$0,05, $^{***}$p$<$0,01; (iv) a regressão referente à primeira coluna também inclui \textit{dummies} de bimestre.\\ 
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

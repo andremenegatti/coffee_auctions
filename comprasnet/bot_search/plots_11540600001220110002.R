@@ -88,7 +88,7 @@ plot_desc <- df_bids %>%
                                            decimal.mark = ',')) +
   labs(
     x = 'Hora',
-    y = 'Diferença de preço entre os lances em reais',
+    y = 'Diferença de preço entre os lances em R$/kg',
     title = 'Evolução de descontos ao longo de um pregão',
     subtitle = subtitle_plot,
     caption = 'Notas: 

@@ -1,0 +1,61 @@
+\setlength{\tabcolsep}{3pt}
+\begin{table}[!htbp]
+\centering
+\begin{threeparttable}
+\centering 
+  \caption{Efeitos das regras de intervalo mínimo sobre o preço final - Resultados detalhados do modelo de diferenças em diferenças - Compradores com sede no Estado de São Paulo} 
+  \label{dd_results_win_bid_sp} 
+\begin{tabular}{lcccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+\\[-1.8ex] & (1) & (2) & (3) & (4) & (5) & (6)\\ 
+\hline \\[-1.8ex] 
+
+ Comprasnet & 0,418$^{***}$ &  &  &  &  & \\ 
+  & (0,055) &  &  &  &  &  \\ 
+  & & & & & & \\ 
+
+ Regra20s & 0,052 & 0,042 & 0,027 & 0,039 & 0,038 & 0,033 \\ 
+  & (0,061) & (0,055) & (0,59) & (0,061) & (0,061) & (0,061) \\ 
+  & & & & & & \\ 
+ Regra20s + Regra3s & $-$0,113$^{*}$ & 0,149$^{**}$ & 0,120$^{*}$ & 0,151$^{**}$ & 0,151$^{**}$ & 0,148$^{**}$ \\ 
+  & (0,064) & (0,059) & (0,064) & (0,067) & (0,067) & (0,066) \\ 
+  & & & & & & \\ 
+ 
+ qualidade\_descafeinado &  &  &  & 0,354$^{***}$ & 0,354$^{***}$ & 0,356$^{***}$ \\ 
+  &  &  &  & (0,121) & (0,121) & (0,121) \\ 
+  & & & & & & \\ 
+ qualidade\_gourmet &  &  &  & 0,362$^{***}$ & 0,362$^{***}$ & 0,357$^{***}$ \\ 
+  &  &  &  & (0,036) & (0,036) & (0,036) \\ 
+  & & & & & & \\ 
+ qualidade\_superior &  &  &  & 0,091$^{**}$ & 0,091$^{**}$ & 0,088$^{**}$ \\ 
+  &  &  &  & (0,039) & (0,039) & (0,039) \\ 
+  & & & & & & \\ 
+embalagem\_1kg &  &  &  & 0,170$^{***}$ & 0,170$^{***}$ & 0,168$^{***}$ \\ 
+  &  &  &  & (0,026) & (0,026) & (0,026) \\ 
+  & & & & & & \\ 
+preco\_futuro\_cafe &  &  &  &  & 0,00003 & $-$0,0001 \\ 
+  &  &  &  &  & (0,0002) & (0,0002) \\ 
+  & & & & & & \\ 
+preco\_saca\_arabica &  &  &  & &  & 0,0005$^{***}$ \\ 
+  &  &  &  & &  & (0,0002) \\ 
+  & & & & & & \\ 
+
+ EF unidade compradora & & X & X & X & X & X \\ 
+ EF município & & X & X & X & X & X \\ 
+ EF marca vencedora & & & X & X & X & X \\ 
+\hline \\[-1.8ex] 
+
+Observações & 1.964 & 1.964 & 1.964 & 1.964 & 1.964 & 1.964 \\ 
+R$^{2}$ Ajustado & 0,187 & 0,783 & 0,801 & 0,822 & 0,822 & 0,823 \\ 
+R$^{2}$ & 0,188 & 0,831 & 0,848 & 0,864 & 0,865 & 0,865 \\ 
+\hline 
+
+\hline \\[-1.8ex] 
+\end{tabular} 
+\begin{tablenotes}
+\footnotesize
+\emph{Notas:} (i) em todas as especificações a variável dependente é o logaritmo do preço final do leilão, em reais de dezembro de 2015 por quilograma de café; (ii) erros-padrão robustos a heterocedasticidade HC1 indicados entre parênteses; (iii) níveis de significância destacados por asteriscos, sendo  $^{*}$p$<$0,1, $^{**}$p$<$0,05, $^{***}$p$<$0,01; (iv) todas as regressões também incluem \textit{dummies} de bimestre.\\ 
+\end{tablenotes}
+\end{threeparttable}
+\end{table} 

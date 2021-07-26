@@ -1,0 +1,47 @@
+
+\setlength{\tabcolsep}{3pt}
+\begin{table}[!htbp]
+\centering
+\begin{threeparttable}
+\centering 
+  \caption{Efeitos das regras de intervalo mínimo sobre o preço final - Resultados do modelo de diferenças em diferenças - Compradores com sede no Estado de São Paulo} 
+  \label{dd_results_win_bid_sp} 
+\begin{tabular}{lcccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+\\[-1.8ex] & (1) & (2) & (3) & (4) & (5) & (6)\\ 
+\hline \\[-1.8ex] 
+
+ Regra20s & 0,052 & 0,042 & 0,030 & 0,041 & 0,041 & 0,036 \\ 
+  & (0,061) & (0,055) & (0,59) & (0,062) & (0,062) & (0,061) \\ 
+  & & & & & & \\ 
+ Regra20s + Regra3s & $-$0,113$^{*}$ & 0,149$^{**}$ & 0,123$^{*}$ & 0,154$^{**}$ & 0,154$^{**}$ & 0,151$^{**}$ \\ 
+  & (0,064) & (0,059) & (0,064) & (0,068) & (0,068) & (0,067) \\ 
+  & & & & & & \\ 
+ 
+ Comprasnet & 0,418$^{***}$ &  &  &  &  & \\ 
+  & (0,055) &  &  &  &  &  \\ 
+  & & & & & & \\ 
+
+ EF unidade compradora & & X & X & X & X & X \\ 
+ EF município & & X & X & X & X & X \\ 
+ EF marca vencedora & & & X & X & X & X \\ 
+ Qualidade & & & & X & X & X \\ 
+ Embalagem & & & & X & X & X \\ 
+ Contrato futuro café &  &  &  &  & X & X \\ 
+ Preço saca café & & & & & & X \\ 
+\hline \\[-1.8ex] 
+
+Observações & 1.964 & 1.964 & 1.964 & 1.964 & 1.964 & 1.964 \\ 
+R$^{2}$ Ajustado & 0,187 & 0,783 & 0,801 & 0,822 & 0,822 & 0,823 \\ 
+R$^{2}$ & 0,188 & 0,831 & 0,848 & 0,864 & 0,865 & 0,865 \\ 
+\hline 
+
+\hline \\[-1.8ex] 
+\end{tabular} 
+\begin{tablenotes}
+\footnotesize
+\emph{Notas:} (i) em todas as especificações a variável dependente é o logaritmo do preço final do leilão, em reais de dezembro de 2015 por quilograma de café; (ii) erros-padrão robustos a heterocedasticidade HC1 indicados entre parênteses; (iii) níveis de significância destacados por asteriscos, sendo  $^{*}$p$<$0,1, $^{**}$p$<$0,05, $^{***}$p$<$0,01; (iv) todas as regressões também incluem \textit{dummies} de bimestre.\\ 
+\end{tablenotes}
+\end{threeparttable}
+\end{table} 
